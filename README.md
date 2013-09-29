@@ -5,11 +5,11 @@ development stages and things are likely to change a lot!
 
 * * *
 
-# Using it
+## Using it
 
 Don't use it. The time has not yet arrived.
 
-# Goals / design principles
+## Goals / design principles
 
 Obviously the main goal is that it be *significantly* easier to
 implement a game with Subjunctive than without. To accomplish that, here
@@ -21,9 +21,9 @@ are some general design principles:
 
 And, as usual, [the Zen of Python] provides excellent guidance.
 
-# Contributing
+## Contributing
 
-## Code guidelines
+### Code guidelines
 
 *   **Read [PEP 8].**
 
@@ -34,22 +34,24 @@ And, as usual, [the Zen of Python] provides excellent guidance.
 *   **Avoid trailing whitespace.** Make sure your editor is set
     up to highlight or automatically strip trailing whitespace.
 
-## Getting started
+### Getting started
 
 So, you want to help out? It's pretty easy. Here are some steps:
 
-## 1. Know some Python
+#### 1. Know some Python
 
 If you already know some programming, the official [Python Tutorial]
 will teach you the basics. Be sure to run the Python interpreter and try
 out the examples as you read them!
 
-## 2. Know some Git
+#### 2. Know some Git
 
 The best way to learn Git is by using it, but you might want to refer to
 the first couple of chapters of the [Pro Git] book as you learn.
 
-## 3. Fork this repository
+#### 3. Fork this repository
+
+More details coming soon!
 
 [the Zen of Python]: http://www.python.org/dev/peps/pep-0020/
 [PEP 8]: http://www.python.org/dev/peps/pep-0008/
