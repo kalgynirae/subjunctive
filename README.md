@@ -23,37 +23,110 @@ And, as usual, [the Zen of Python] provides excellent guidance.
 
 ## Contributing
 
-### Code guidelines
+### Guidelines
+
+#### Code/text format
+
+*   **Indent with spaces (four per indentation level).** Make sure your
+    editor inserts spaces when you press the Tab key.
 
 *   **Read [PEP 8].**
 
 *   **Use UNIX-style line endings.** Make sure your editor saves files
-    with UNIX line endings (or that Git is configured to fix line
-    endings when you commit).
+    with UNIX line endings (or that Git is [configured to normalize line
+    endings when you
+    commit](https://help.github.com/articles/dealing-with-line-endings)).
 
-*   **Avoid trailing whitespace.** Make sure your editor is set
-    up to highlight or automatically strip trailing whitespace.
+*   **Avoid trailing whitespace.** This means that blank lines cannot
+    not contain any spaces or tabs! You can set up your editor to
+    highlight or automatically remove trailing whitespace.
 
-### Getting started
+#### Commit messages
 
-So, you want to help out? It's pretty easy. Here are some steps:
+Refer to [A Note About Git Commit Messages].
 
-#### 1. Know some Python
+### Set-up
 
-If you already know some programming, the official [Python Tutorial]
-will teach you the basics. Be sure to run the Python interpreter and try
-out the examples as you read them!
+So, you want to help out? It's pretty easy, but there are a few things
+you need to set up first.
 
-#### 2. Know some Git
+1.  **Python**
 
-The best way to learn Git is by using it, but you might want to refer to
-the first couple of chapters of the [Pro Git] book as you learn.
+    You need Python 3.2 or newer. You should be able to open a terminal
+    and run the Python interpreter by typing `python` or `python3`.
 
-#### 3. Fork this repository
+    If you already know some programming, the official [Python Tutorial]
+    will teach you the basics. Be sure to run the Python interpreter and
+    *try the examples as you read*! If you don't know any programming
+    yet, [Codeacademy's Python track] is a good place to start.
 
-More details coming soon!
+2.  **Git**
+
+    Install the standard Git from <http://git-scm.com/downloads>. Unless
+    you know better, use the default options. If you're on Windows, you
+    should also install the [Git credential helper].
+
+    If you have never used Git before, I recommend [Ry's Git Tutorial]
+    to learn the basics. If you already know the basics but need a
+    reference (and you find the manual pages too confusing), look at
+    [Pro Git].
+
+    On Linux or Mac OS, you'll run Git commands using any terminal
+    program. On Windows, you'll use Git Bash (which was installed with
+    Git).
+
+    Don't forget to configure Git with your name and email address:
+
+        $ git config --global user.name "John Smith"
+        $ git config --global user.email "johnsmith@juno.com"
+
+    Note that this email address will be publicly viewable through
+    GitHub.
+
+3.  **GitHub**
+
+    Create an account on [GitHub] and log in. Make sure the email that
+    you configured Git with is associated with your account (you can
+    associate additional email addresses in the account settings).
+
+4.  **your editor**
+
+    I strongly recommend against trying to use an IDE for this
+    relatively small project! For Linux, I recommend Vim (if you can
+    handle the awesome) or Gedit. For Windows, I recommend [Sublime
+    Text] (shareware but awesome) or [Notepad++] (open source).
+
+    Figure out how to set up your editor so that it follows the rules
+    mentioned in the Code Guidelines above.
+
+### Workflow
+
+1.  **Fork this repository.**
+
+    Log in to GitHub and click the *Fork* button found on the main page
+    for this repository.  Once the process completes, look down the
+    right side of the page for the *clone URL* (on Windows you'll want
+    the HTTPS URL; on Linux or Mac OS you probably want the SSH URL).
+    Use this to clone the repository.
+
+        $ git clone <URL>
+
+    This will create a directory called `subjunctive`.
+
+2.  ???
+
+3.  PROFIT!
+
+Information regarding branching, rebasing, and merging is coming soon!
 
 [the Zen of Python]: http://www.python.org/dev/peps/pep-0020/
 [PEP 8]: http://www.python.org/dev/peps/pep-0008/
+[A Note About Git Commit Messages]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
 [Python Tutorial]: http://docs.python.org/3/tutorial/introduction.html
+[Codeacademy's Python track]: http://www.codecademy.com/tracks/python
+[Git credential helper]: http://blob.andrewnurse.net/gitcredentialwinstore/git-credential-winstore.exe
+[Ry's Git Tutorial]: http://rypress.com/tutorials/git/index.html
 [Pro Git]: http://git-scm.com/book
+[GitHub]: https://github.com/
+[Sublime Text]: http://www.sublimetext.com/3
+[Notepad++]: http://notepad-plus-plus.org/
