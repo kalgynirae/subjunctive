@@ -8,8 +8,6 @@ logging.basicConfig(level=logging.DEBUG)
 
 pyglet.resource.path.append('@subjunctive')
 pyglet.resource.reindex()
-gl.glEnable(gl.GL_BLEND)
-gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
 class God:
     __slots__ = []
@@ -90,10 +88,15 @@ class World(pyglet.window.Window):
         super().__init__(width=width, height=height,
                          caption=self.window_caption)
 
+        # Enable rendering with transparency
+        gl.glEnable(gl.GL_BLEND)
+        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
         self.Location = make_location_class(self.grid_size)
 
         # Construct the list of available locations
         # We're using a set so the lookup time is fast
+        # But really we're not sure that a set is the best solution
         self._available_locations = {self.Location(x, y)
                                      for x in range(self.grid_size[0])
                                      for y in range(self.grid_size[1])}
@@ -131,6 +134,7 @@ class World(pyglet.window.Window):
         if do_push and new_location in self._entities:
             do_push = self.push(self._entities[new_location], direction, entity)
         if do_push:
+            entity.direction = direction
             self.remove(entity)
             self.place(entity, new_location)
         return do_push
@@ -147,7 +151,7 @@ class World(pyglet.window.Window):
     def spawn_random(self, entity_type, number=1):
         new_entities = []
         for i in range(number):
-            location = random.choice(self._available_locations)
+            location = random.choice(list(self._available_locations))
             e = entity_type()
             self.place(e, location)
             new_entities.append(e)
@@ -155,6 +159,7 @@ class World(pyglet.window.Window):
 
 class Entity:
     image = pyglet.resource.image('images/default.png')
+
     pushable = False
 
     def __init__(self, name="John Smith"):

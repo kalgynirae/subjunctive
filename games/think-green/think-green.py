@@ -4,6 +4,9 @@ import pyglet
 
 import subjunctive
 
+class DeathError(Exception):
+    pass
+
 class Planet(subjunctive.World):
     background = pyglet.resource.image('images/green_planet.png')
     grid_offset = (231, 99)
@@ -77,4 +80,5 @@ if __name__ == '__main__':
     world = Planet()
     cursor = Cursor()
     world.place(cursor, world.center)
+    world.setup()
     subjunctive.start(world, cursor)
