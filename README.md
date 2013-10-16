@@ -162,13 +162,13 @@ you need to set up first.
     `--force` option when you push; alternatively, you can just give
     your branch a new name and then push it.
 
-7.  Repeat steps 3–5 as necessary.
+7.  Repeat steps 3–6 as necessary.
 
 8.  **Push** to your GitHub repository.
 
         $ git push origin <branch name>
 
-9.  Repeat steps 3–7 as necessary.
+9.  Repeat steps 3–8 as necessary.
 
 10. Maybe **rebase** to clean up your branch's history.
 
