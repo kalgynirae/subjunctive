@@ -73,7 +73,7 @@ class World(pyglet.window.Window):
     grid_size = (16, 16)
     tile_size = (16, 16)
     window_caption = "Subjunctive!"
-
+    
     @property
     def center(self):
         return self.Location(self.grid_size[0] // 2, self.grid_size[1] // 2)
@@ -91,17 +91,11 @@ class World(pyglet.window.Window):
         # Enable rendering with transparency
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-
         self.Location = make_location_class(self.grid_size)
-
-        # Construct the list of available locations
-        # We're using a set so the lookup time is fast
-        # But really we're not sure that a set is the best solution
-        self._available_locations = {self.Location(x, y)
-                                     for x in range(self.grid_size[0])
-                                     for y in range(self.grid_size[1])}
-        print(self._available_locations)
-        self._entities = {}
+        self._entities = {self.Location(x, y):None
+                         for x in range(self.grid_size[0])
+                         for y in range(self.grid_size[1])}
+        print(self._entities)
 
     def count(self, entity_type):
         return sum(1 for e in self._entities if isinstance(e, entity_type))
@@ -118,11 +112,10 @@ class World(pyglet.window.Window):
 
     def place(self, entity, location):
         logging.debug("Placing {} at {}".format(entity, location))
-        if location in self._entities:
+        if self._entities[location] is not None:
             raise ValueError("Location {} already contains {}"
                              "".format(location, self._entities[location]))
         self._entities[location] = entity
-        self._available_locations.remove(location)
         entity._location = location
 
     def push(self, entity, direction, pusher=God):
@@ -131,7 +124,7 @@ class World(pyglet.window.Window):
         except OutOfBounds:
             return False
         do_push = entity.respond_to_push(direction, pusher)
-        if do_push and new_location in self._entities:
+        if do_push and self._entities[new_location] is not None:
             do_push = self.push(self._entities[new_location], direction, entity)
         if do_push:
             entity.direction = direction
@@ -141,8 +134,7 @@ class World(pyglet.window.Window):
 
     def remove(self, entity):
         if self._entities[entity._location] is entity:
-            del self._entities[entity._location]
-            self._available_locations.add(entity._location)
+            self._entities[entity._location] = None
             entity._location = None
         else:
             raise ValueError("Entity {} is not in location {}"
@@ -151,7 +143,8 @@ class World(pyglet.window.Window):
     def spawn_random(self, entity_type, number=1):
         new_entities = []
         for i in range(number):
-            location = random.choice(list(self._available_locations))
+            location = random.choice([key for (key, value) in
+                                    self._entities.items() if value is None])
             e = entity_type()
             self.place(e, location)
             new_entities.append(e)
