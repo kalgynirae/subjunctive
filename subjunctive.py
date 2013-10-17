@@ -73,7 +73,7 @@ class World(pyglet.window.Window):
     grid_size = (16, 16)
     tile_size = (16, 16)
     window_caption = "Subjunctive!"
-    
+
     @property
     def center(self):
         return self.Location(self.grid_size[0] // 2, self.grid_size[1] // 2)
@@ -92,7 +92,7 @@ class World(pyglet.window.Window):
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
         self.Location = make_location_class(self.grid_size)
-        self._entities = {self.Location(x, y):None
+        self._entities = {self.Location(x, y): None
                           for x in range(self.grid_size[0])
                           for y in range(self.grid_size[1])}
         print(self._entities)
@@ -104,7 +104,7 @@ class World(pyglet.window.Window):
         if self.background:
             self.background.blit(0, 0)
         for location, entity in self._entities.items():
-            if self._entities[location] is not None:
+            if entity:
                 entity.image.blit(*self._pixels(location))
 
     def _pixels(self, location):
@@ -177,3 +177,4 @@ def start(world, cursor):
         if directions.get(motion, False):
             world.push(cursor, directions[motion])
     pyglet.app.run()
+    
