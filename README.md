@@ -41,6 +41,17 @@ And, as usual, [the Zen of Python] provides excellent guidance.
     not contain any spaces or tabs! You can set up your editor to
     highlight or automatically remove trailing whitespace.
 
+*   **Make sure the file ends with a newline.** `git diff` will show if
+    you are about to commit a file with the newline removed. The reason
+    for this is that many UNIX-style command-line tools think of the
+    newline as a *terminator* rather than a separator. I think this
+    interpretation is better in the majority of cases (one such case is
+    concatenating two files: `cat <file> <file2>`).
+
+    The crux of the matter is that you must make sure your editor writes
+    a newline at the end of the file (if necessary, leave a blank line
+    at the end).
+
 #### Commit messages
 
 Refer to [A Note About Git Commit Messages].
