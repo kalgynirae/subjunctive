@@ -93,8 +93,8 @@ class World(pyglet.window.Window):
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
         self.Location = make_location_class(self.grid_size)
         self._entities = {self.Location(x, y):None
-                         for x in range(self.grid_size[0])
-                         for y in range(self.grid_size[1])}
+                          for x in range(self.grid_size[0])
+                          for y in range(self.grid_size[1])}
         print(self._entities)
 
     def count(self, entity_type):
@@ -104,7 +104,8 @@ class World(pyglet.window.Window):
         if self.background:
             self.background.blit(0, 0)
         for location, entity in self._entities.items():
-            entity.image.blit(*self._pixels(location))
+            if self._entities[location] is not None:
+                entity.image.blit(*self._pixels(location))
 
     def _pixels(self, location):
         return (location.x * self.tile_size[0] + self.grid_offset[0],
@@ -144,7 +145,7 @@ class World(pyglet.window.Window):
         new_entities = []
         for i in range(number):
             location = random.choice([key for (key, value) in
-                                    self._entities.items() if value is None])
+                                      self._entities.items() if value is None])
             e = entity_type()
             self.place(e, location)
             new_entities.append(e)
