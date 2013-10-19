@@ -37,16 +37,12 @@ class Planet(subjunctive.World):
             self.spawn_random(Hazard)
 
 class Cursor(subjunctive.Entity):
-    image_up = pyglet.resource.image('images/cursor.png')
+    directional = True
+    sprite = subjunctive.sprite('images/cursor.png')
     pushable = True
 
-    @property
-    def image(self):
-        # TODO: image rotation
-        return self.image_up
-
 class Hazard(subjunctive.Entity):
-    image = pyglet.resource.image('images/hazard.png')
+    sprite = subjunctive.sprite('images/hazard.png')
 
     def respond_to_push(self, direction, pusher):
         if isinstance(pusher, Neutralize):
@@ -54,26 +50,26 @@ class Hazard(subjunctive.Entity):
         raise DeathError
 
 class Neutralize(subjunctive.Entity):
-    image = pyglet.resource.image('images/neutralize.png')
+    sprite = subjunctive.sprite('images/neutralize.png')
     pushable = True
 
 class Receptor(subjunctive.Entity):
-    images = [pyglet.resource.image('images/receptor0.png'),
-              pyglet.resource.image('images/receptor4.png'),
-              pyglet.resource.image('images/receptor3.png'),
-              pyglet.resource.image('images/receptor2.png'),
-              pyglet.resource.image('images/receptor1.png')]
+    sprites = [subjunctive.sprite('images/receptor0.png'),
+               subjunctive.sprite('images/receptor4.png'),
+               subjunctive.sprite('images/receptor3.png'),
+               subjunctive.sprite('images/receptor2.png'),
+               subjunctive.sprite('images/receptor1.png')]
 
     def __init__(self):
         super().__init__()
         self.fuel = 0
 
     @property
-    def image(self):
-        return self.images[self.fuel]
+    def sprite(self):
+        return self.sprites[self.fuel]
 
 class Recycle(subjunctive.Entity):
-    image = pyglet.resource.image('images/recycle.png')
+    sprite = subjunctive.sprite('images/recycle.png')
     pushable = True
 
 if __name__ == '__main__':
