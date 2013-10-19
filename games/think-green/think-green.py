@@ -14,12 +14,17 @@ class Planet(subjunctive.World):
     tile_size = (13, 13)
     window_caption = "Think Green"
 
+    def __init__(self):
+        super().__init__()
+        self.score = 0
+        self.tick_count = 0
+
     def setup(self):
         self.spawn_random(Recycle, 25)
         self.spawn_random(Receptor, 7)
         self.spawn_random(Hazard, 7)
 
-    def on_tick(self):
+    def spawn_stuff(self):
         # This should run everytime an action happens. Dunno if that's actually
         # what Pyglet thinks it does, though.
         self.score -= 1

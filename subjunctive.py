@@ -98,7 +98,8 @@ class World(pyglet.window.Window):
         print(self._entities)
 
     def count(self, entity_type):
-        return sum(1 for e in self._entities if isinstance(e, entity_type))
+        return sum(1 for e in self._entities.values()
+                   if isinstance(e, entity_type))
 
     def on_draw(self):
         if self.background:
@@ -152,6 +153,7 @@ class World(pyglet.window.Window):
             e = entity_type()
             self.place(e, location)
             new_entities.append(e)
+        logging.debug("Spawned {} {}".format(len(new_entities), entity_type))
         return new_entities
 
 class Entity:
@@ -203,6 +205,10 @@ def sprite(path):
 def start(world, cursor):
     @world.event
     def on_text_motion(motion):
+        try:
+            world.spawn_stuff()
+        except NameError:
+            pass
         directions = {pyglet.window.key.MOTION_LEFT: 'left',
                       pyglet.window.key.MOTION_DOWN: 'down',
                       pyglet.window.key.MOTION_UP: 'up',
