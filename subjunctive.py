@@ -107,6 +107,7 @@ class World(pyglet.window.Window):
         for location, entity in self._entities.items():
             if entity:
                 entity.sprite.set_position(*self._pixels(location))
+                entity.sprite.image = entity.image
                 entity.sprite.draw()
 
     def _pixels(self, location):
@@ -162,6 +163,9 @@ class Entity:
     pushable = False
 
     def __init__(self, *, direction='right', name="John Smith"):
+        # Create the sprite first to avoid problems with overridden setters
+        # that try to access the sprite
+        self.sprite = pyglet.sprite.Sprite(Entity.image)
         self.direction = direction
         self.name = name
 
@@ -198,9 +202,6 @@ def rotate(sprite, direction):
         sprite.rotation = 0
         sprite.image.anchor_x = 0
         sprite.image.anchor_y = 0
-
-def sprite(path):
-    return pyglet.sprite.Sprite(pyglet.resource.image(path))
 
 def start(world, cursor):
     @world.event
