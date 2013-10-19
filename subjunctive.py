@@ -105,7 +105,8 @@ class World(pyglet.window.Window):
             self.background.blit(0, 0)
         for location, entity in self._entities.items():
             if entity:
-                entity.image.blit(*self._pixels(location))
+                entity.sprite.set_position(*self._pixels(location))
+                entity.sprite.draw()
 
     def _pixels(self, location):
         return (location.x * self.tile_size[0] + self.grid_offset[0],
@@ -120,6 +121,8 @@ class World(pyglet.window.Window):
         entity._location = location
 
     def push(self, entity, direction, pusher=God):
+        if pusher is God:
+            entity.direction = direction
         try:
             new_location = entity._location.adjacent(direction)
         except OutOfBounds:
@@ -128,7 +131,6 @@ class World(pyglet.window.Window):
         if do_push and self._entities[new_location] is not None:
             do_push = self.push(self._entities[new_location], direction, entity)
         if do_push:
-            entity.direction = direction
             self.remove(entity)
             self.place(entity, new_location)
         return do_push
@@ -144,28 +146,59 @@ class World(pyglet.window.Window):
     def spawn_random(self, entity_type, number=1):
         new_entities = []
         for i in range(number):
-            location = random.choice([key for (key, value) in
-                                      self._entities.items() if value is None])
+            available_locations = [location for location, entity
+                                   in self._entities.items() if not entity]
+            location = random.choice(available_locations)
             e = entity_type()
             self.place(e, location)
             new_entities.append(e)
         return new_entities
 
 class Entity:
+    directional = False
     image = pyglet.resource.image('images/default.png')
-
     pushable = False
 
-    def __init__(self, name="John Smith"):
-        self.direction = None
-        self.location = None
+    def __init__(self, *, direction='right', name="John Smith"):
+        self.direction = direction
         self.name = name
 
     def __str__(self):
         return self.name
 
+    @property
+    def direction(self):
+        return self._direction
+
+    @direction.setter
+    def direction(self, direction):
+        self._direction = direction
+        if self.directional:
+            rotate(self.sprite, direction)
+
     def respond_to_push(self, direction, pusher):
         return self.pushable
+
+def rotate(sprite, direction):
+    if direction == 'left':
+        sprite.rotation = 180
+        sprite.image.anchor_x = sprite.image.width
+        sprite.image.anchor_y = sprite.image.height
+    elif direction == 'down':
+        sprite.rotation = 90
+        sprite.image.anchor_x = sprite.image.width
+        sprite.image.anchor_y = 0
+    elif direction == 'up':
+        sprite.rotation = 270
+        sprite.image.anchor_x = 0
+        sprite.image.anchor_y = sprite.image.height
+    elif direction == 'right':
+        sprite.rotation = 0
+        sprite.image.anchor_x = 0
+        sprite.image.anchor_y = 0
+
+def sprite(path):
+    return pyglet.sprite.Sprite(pyglet.resource.image(path))
 
 def start(world, cursor):
     @world.event
