@@ -95,6 +95,9 @@ class World(pyglet.window.Window):
         self.Location = make_location_class(self.grid_size)
         self.Location.__qualname__ = self.__class__.__qualname__ + ".Location"
 
+        # Create a batch to draw the sprites
+        self.batch = pyglet.graphics.Batch()
+
     def clear(self):
         self._entities = {self.Location(x, y): None
                           for x in range(self.grid_size[0])
@@ -111,20 +114,22 @@ class World(pyglet.window.Window):
         raise ValueError("{} not in world".format(entity))
 
     def on_draw(self):
-        if self.background:
-            self.background.blit(0, 0)
+        # Update the position of each sprite
         for location, entity in self._entities.items():
             if entity:
+                s = entity.sprite
                 x, y = self._pixels(location)
-                if entity.sprite.rotation == 90:
-                    y += entity.sprite.image.height
-                elif entity.sprite.rotation == 180:
-                    x += entity.sprite.image.width
-                    y += entity.sprite.image.height
-                elif entity.sprite.rotation == 270:
-                    x += entity.sprite.image.width
-                entity.sprite.set_position(x, y)
-                entity.sprite.draw()
+                if s.rotation == 90:
+                    y += s.image.height
+                elif s.rotation == 180:
+                    x += s.image.width
+                    y += s.image.height
+                elif s.rotation == 270:
+                    x += s.image.width
+                s.set_position(x, y)
+        if self.background:
+            self.background.blit(0, 0)
+        self.batch.draw()
 
     def _pixels(self, location):
         return (location.x * self.tile_size[0] + self.grid_offset[0],
@@ -166,7 +171,7 @@ class World(pyglet.window.Window):
             if not available_locations:
                 break
             location = random.choice(available_locations)
-            e = entity_type()
+            e = entity_type(self)
             self.place(e, location)
             new_entities.append(e)
         return new_entities
@@ -175,10 +180,10 @@ class Entity:
     directional = False
     pushable = False
 
-    def __init__(self, *, direction='right', name="John Smith"):
+    def __init__(self, world, *, direction='right', name="John Smith"):
         # Create the sprite first to avoid problems with overridden setters
         # that try to access the sprite
-        self.sprite = pyglet.sprite.Sprite(self.image)
+        self.sprite = pyglet.sprite.Sprite(self.image, batch=world.batch)
         self.direction = direction
         self.name = name
 
