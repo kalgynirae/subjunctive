@@ -50,8 +50,9 @@ class Hazard(subjunctive.Entity):
 
     def respond_to_push(self, direction, pusher, world):
         if isinstance(pusher, Neutralize):
-            raise Vanish
-        raise DeathError
+            world.remove(pusher)
+        else:
+            raise DeathError
 
 class Neutralize(subjunctive.Entity):
     image = pyglet.resource.image('images/neutralize.png')

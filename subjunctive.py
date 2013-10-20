@@ -110,9 +110,6 @@ class World(pyglet.window.Window):
                 return location
         raise ValueError("{} is not in the world".format(target))
 
-    def neighbor(self, entity, direction):
-        return self._entities[self.locate(entity).adjacent(direction)]
-
     def on_draw(self):
         if self.background:
             self.background.blit(0, 0)
@@ -140,21 +137,30 @@ class World(pyglet.window.Window):
                              "".format(location, self._entities[location]))
         self._entities[location] = entity
 
-    def push(self, entity, direction, pusher=God):
-        """DELETED"""
-        if pusher is God:
-            entity.direction = direction
+    def push(self, entity, direction, pusher):
+        response = self.respond_to_push(self, world, direction, pusher)
         try:
-            new_location = entity._location.adjacent(direction)
+            new_location = self.locate(entity).adjacent(direction)
         except OutOfBounds:
-            return False
-        do_push = entity.respond_to_push(direction, pusher, self)
-        if do_push and self._entities[new_location] is not None:
-            do_push = self.push(self._entities[new_location], direction, entity)
-        if do_push:
-            self.remove(entity)
-            self.place(entity, new_location)
-        return do_push
+            response = 'nope'
+        else:
+            if self._entities[new_location]:
+                should_move = neighbor.push(world, direction, self)
+            if should_move:
+                self.remove(entity)
+                self.place(entity, new_location)
+            return should_move
+        if pusher is God:
+            self.direction = direction
+
+    def push(self, world, direction, pusher):
+        self.respond_to_push(world, direction, pusher)
+        neighbor = world.neighbor(direction)
+        try:
+            neighbor.push(world, direction, self)
+        except NotPush:
+            raise
+        except Consume:
 
     def remove(self, entity):
         self._entities[self.locate(entity)] = None
@@ -196,18 +202,8 @@ class Entity:
         if self.directional:
             rotate(self.sprite, direction)
 
-    def respond_to_push(self, direction, pusher, world):
-        if self.pushable:
-            try:
-                return world.push()
-        return self.pushable
-
-    def push(self, world, direction, pusher):
-        if self.pushable:
-            neighbor = world.neighbor(direction)
-            try:
-                neighbor.push(world, direction, self)
-            except
+    def respond_to_push(self, direction, pusher):
+        return 'ok' if self.pushable else 'nope'
 
 def rotate(sprite, direction):
     rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}
