@@ -63,8 +63,7 @@ def make_location_class(grid_size):
                 return self.__class__(self.x + 1, self.y)
             else:
                 raise ValueError("Invalid direction: {}".format(direction))
-    # TODO: do some Python hackery to make the name of this class more helpful
-    # Location.__name__ = class_ + '.Location'
+
     return Location
 
 class World(pyglet.window.Window):
@@ -91,7 +90,10 @@ class World(pyglet.window.Window):
         # Enable rendering with transparency
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
+        # Create a grid-aware Location class
         self.Location = make_location_class(self.grid_size)
+        self.Location.__qualname__ = self.__class__.__qualname__ + ".Location"
 
     def clear(self):
         self._entities = {self.Location(x, y): None
