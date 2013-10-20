@@ -6,6 +6,7 @@ import subjunctive
 
 class DeathError(Exception):
     pass
+
 class Planet(subjunctive.World):
     background = pyglet.resource.image('images/green_planet.png')
     grid_offset = (231, 99)
@@ -63,19 +64,19 @@ class Receptor(subjunctive.Entity):
               pyglet.resource.image('images/receptor3.png'),
               pyglet.resource.image('images/receptor2.png'),
               pyglet.resource.image('images/receptor1.png')]
-    image = images[0]
+
     def __init__(self):
         super().__init__()
-        self._fuel = 0
+        self.fuel = 0
 
     @property
     def fuel(self):
         return self._fuel
 
     @fuel.setter
-    def set_fuel(self, fuel):
+    def fuel(self, fuel):
         self._fuel = fuel
-        self.sprite.image = self.images[fuel]
+        self.image = self.images[fuel]
 
 class Recycle(subjunctive.Entity):
     image = pyglet.resource.image('images/recycle.png')
@@ -92,4 +93,3 @@ if __name__ == '__main__':
             subjunctive.start(world, cursor)
         except DeathError:
             print("You died.")
-
