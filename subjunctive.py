@@ -63,8 +63,7 @@ def make_location_class(grid_size):
                 return self.__class__(self.x + 1, self.y)
             else:
                 raise ValueError("Invalid direction: {}".format(direction))
-    # TODO: do some Python hackery to make the name of this class more helpful
-    # Location.__name__ = class_ + '.Location'
+
     return Location
 
 class World(pyglet.window.Window):
@@ -91,7 +90,10 @@ class World(pyglet.window.Window):
         # Enable rendering with transparency
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
+
+        # Create a grid-aware Location class
         self.Location = make_location_class(self.grid_size)
+        self.Location.__qualname__ = self.__class__.__qualname__ + ".Location"
 
     def clear(self):
         self._entities = {self.Location(x, y): None
@@ -101,6 +103,15 @@ class World(pyglet.window.Window):
     def count(self, entity_type):
         return sum(1 for e in self._entities.values()
                    if isinstance(e, entity_type))
+
+    def locate(self, target):
+        for location, entity in self._entities.items():
+            if entity is target:
+                return location
+        raise ValueError("{} is not in the world".format(target))
+
+    def neighbor(self, entity, direction):
+        return self._entities[self.locate(entity).adjacent(direction)]
 
     def on_draw(self):
         if self.background:
@@ -128,16 +139,16 @@ class World(pyglet.window.Window):
             raise ValueError("Location {} already contains {}"
                              "".format(location, self._entities[location]))
         self._entities[location] = entity
-        entity._location = location
 
     def push(self, entity, direction, pusher=God):
+        """DELETED"""
         if pusher is God:
             entity.direction = direction
         try:
             new_location = entity._location.adjacent(direction)
         except OutOfBounds:
             return False
-        do_push = entity.respond_to_push(direction, pusher)
+        do_push = entity.respond_to_push(direction, pusher, self)
         if do_push and self._entities[new_location] is not None:
             do_push = self.push(self._entities[new_location], direction, entity)
         if do_push:
@@ -146,15 +157,11 @@ class World(pyglet.window.Window):
         return do_push
 
     def remove(self, entity):
-        if self._entities[entity._location] is entity:
-            self._entities[entity._location] = None
-            entity._location = None
-        else:
-            raise ValueError("Entity {} is not in location {}"
-                             "".format(entity, entity._location))
+        self._entities[self.locate(entity)] = None
 
     def spawn_random(self, entity_type, number=1):
         new_entities = []
+        logging.debug("Spawning {} {}s".format(number, entity_type))
         for i in range(number):
             available_locations = [location for location, entity
                                    in self._entities.items() if not entity]
@@ -162,7 +169,6 @@ class World(pyglet.window.Window):
             e = entity_type()
             self.place(e, location)
             new_entities.append(e)
-        logging.debug("Spawned {} {}".format(len(new_entities), entity_type))
         return new_entities
 
 class Entity:
@@ -170,12 +176,12 @@ class Entity:
     image = pyglet.resource.image('images/default.png')
     pushable = False
 
-    def __init__(self, *, direction='right', name="John Smith"):
+    def __init__(self, *, direction='right', name=None):
         # Create the sprite first to avoid problems with overridden setters
         # that try to access the sprite
         self.sprite = pyglet.sprite.Sprite(self.image)
         self.direction = direction
-        self.name = name
+        self.name = name if name else self.__class__.__name__
 
     def __str__(self):
         return self.name
@@ -185,13 +191,23 @@ class Entity:
         return self._direction
 
     @direction.setter
-    def direction(self, direction):
+    def set_direction(self, direction):
         self._direction = direction
         if self.directional:
             rotate(self.sprite, direction)
 
-    def respond_to_push(self, direction, pusher):
+    def respond_to_push(self, direction, pusher, world):
+        if self.pushable:
+            try:
+                return world.push()
         return self.pushable
+
+    def push(self, world, direction, pusher):
+        if self.pushable:
+            neighbor = world.neighbor(direction)
+            try:
+                neighbor.push(world, direction, self)
+            except
 
 def rotate(sprite, direction):
     rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}
@@ -209,5 +225,5 @@ def start(world, cursor):
                       pyglet.window.key.MOTION_UP: 'up',
                       pyglet.window.key.MOTION_RIGHT: 'right'}
         if directions.get(motion, False):
-            world.push(cursor, directions[motion])
+            cursor.push(world, directions[motion], pusher=God)
     pyglet.app.run()

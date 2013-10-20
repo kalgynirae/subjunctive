@@ -48,7 +48,7 @@ class Cursor(subjunctive.Entity):
 class Hazard(subjunctive.Entity):
     image = pyglet.resource.image('images/hazard.png')
 
-    def respond_to_push(self, direction, pusher):
+    def respond_to_push(self, direction, pusher, world):
         if isinstance(pusher, Neutralize):
             raise Vanish
         raise DeathError
