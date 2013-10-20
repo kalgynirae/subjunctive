@@ -92,10 +92,11 @@ class World(pyglet.window.Window):
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
         self.Location = make_location_class(self.grid_size)
+
+    def clear(self):
         self._entities = {self.Location(x, y): None
                           for x in range(self.grid_size[0])
                           for y in range(self.grid_size[1])}
-        print(self._entities)
 
     def count(self, entity_type):
         return sum(1 for e in self._entities.values()
@@ -106,8 +107,15 @@ class World(pyglet.window.Window):
             self.background.blit(0, 0)
         for location, entity in self._entities.items():
             if entity:
-                entity.sprite.set_position(*self._pixels(location))
-                entity.sprite.image = entity.image
+                x, y = self._pixels(location)
+                if entity.sprite.rotation == 90:
+                    y += entity.sprite.image.height
+                elif entity.sprite.rotation == 180:
+                    x += entity.sprite.image.width
+                    y += entity.sprite.image.height
+                elif entity.sprite.rotation == 270:
+                    x += entity.sprite.image.width
+                entity.sprite.set_position(x, y)
                 entity.sprite.draw()
 
     def _pixels(self, location):
@@ -165,7 +173,7 @@ class Entity:
     def __init__(self, *, direction='right', name="John Smith"):
         # Create the sprite first to avoid problems with overridden setters
         # that try to access the sprite
-        self.sprite = pyglet.sprite.Sprite(Entity.image)
+        self.sprite = pyglet.sprite.Sprite(self.image)
         self.direction = direction
         self.name = name
 
@@ -186,22 +194,8 @@ class Entity:
         return self.pushable
 
 def rotate(sprite, direction):
-    if direction == 'left':
-        sprite.rotation = 180
-        sprite.image.anchor_x = sprite.image.width
-        sprite.image.anchor_y = sprite.image.height
-    elif direction == 'down':
-        sprite.rotation = 90
-        sprite.image.anchor_x = sprite.image.width
-        sprite.image.anchor_y = 0
-    elif direction == 'up':
-        sprite.rotation = 270
-        sprite.image.anchor_x = 0
-        sprite.image.anchor_y = sprite.image.height
-    elif direction == 'right':
-        sprite.rotation = 0
-        sprite.image.anchor_x = 0
-        sprite.image.anchor_y = 0
+    rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}
+    sprite.rotation = rotation[direction]
 
 def start(world, cursor):
     @world.event
