@@ -65,8 +65,8 @@ class Receptor(subjunctive.Entity):
               pyglet.resource.image('images/receptor2.png'),
               pyglet.resource.image('images/receptor1.png')]
 
-    def __init__(self):
-        super().__init__()
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
         self.fuel = 0
 
     @property
@@ -87,7 +87,7 @@ if __name__ == '__main__':
     while True:
         try:
             world.clear()
-            cursor = Cursor()
+            cursor = Cursor(world)
             world.place(cursor, world.center)
             world.setup()
             subjunctive.start(world, cursor)
