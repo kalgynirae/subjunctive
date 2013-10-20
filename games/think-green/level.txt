@@ -1,0 +1,5 @@
+A B _ B A
+B A C _ A B
+B _ C C A B
+_ _ _ _ _ _
+A A A A A A

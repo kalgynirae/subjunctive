@@ -160,6 +160,23 @@ class World(pyglet.window.Window):
     def remove(self, entity):
         self._entities[self.locate(entity)] = None
 
+    def read_level(self, path):
+        columns = []
+        with open(path, "r") as leveltext_file:
+            rows = leveltext_file.read().splitlines()
+            for i in rows:
+                columns.append(i.split())
+        return rows, columns
+
+    def place_objects(self, obj_list, rows, columns):
+        for ly, i in enumerate(rows):
+            for lx, j in enumerate(columns[ly]):
+                try:
+                    e = obj_list[j]()
+                    self.place(e, self.Location(lx,self.grid_size[1]-ly-1))
+                except KeyError:
+                    pass
+
     def spawn_random(self, entity_type, number=1, cursor=None):
         logging.debug("Spawning {} {}s".format(number, entity_type))
         new_entities = []
