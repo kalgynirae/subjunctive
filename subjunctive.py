@@ -171,7 +171,6 @@ class World(pyglet.window.Window):
 
 class Entity:
     directional = False
-    image = pyglet.resource.image('images/default.png')
     pushable = False
 
     def __init__(self, *, direction='right', name="John Smith"):
@@ -193,6 +192,14 @@ class Entity:
         self._direction = direction
         if self.directional:
             rotate(self.sprite, direction)
+
+    @property
+    def image(self):
+        return pyglet.resource.image('images/default.png')
+
+    @image.setter
+    def image(self, image):
+        self.sprite.image = image
 
     def respond_to_push(self, direction, pusher):
         return self.pushable
