@@ -102,6 +102,12 @@ class World(pyglet.window.Window):
         return sum(1 for e in self._entities.values()
                    if isinstance(e, entity_type))
 
+    def locate(self, entity):
+        for location, suspect in self._entities.items():
+            if suspect is entity:
+                return location
+        raise ValueError("{} not in world".format(entity))
+
     def on_draw(self):
         if self.background:
             self.background.blit(0, 0)
@@ -128,13 +134,12 @@ class World(pyglet.window.Window):
             raise ValueError("Location {} already contains {}"
                              "".format(location, self._entities[location]))
         self._entities[location] = entity
-        entity._location = location
 
     def push(self, entity, direction, pusher=God):
         if pusher is God:
             entity.direction = direction
         try:
-            new_location = entity._location.adjacent(direction)
+            new_location = self.locate(entity).adjacent(direction)
         except OutOfBounds:
             return False
         do_push = entity.respond_to_push(direction, pusher)
@@ -146,23 +151,22 @@ class World(pyglet.window.Window):
         return do_push
 
     def remove(self, entity):
-        if self._entities[entity._location] is entity:
-            self._entities[entity._location] = None
-            entity._location = None
-        else:
-            raise ValueError("Entity {} is not in location {}"
-                             "".format(entity, entity._location))
+        self._entities[self.locate(entity)] = None
 
-    def spawn_random(self, entity_type, number=1):
+    def spawn_random(self, entity_type, number=1, cursor=None):
+        logging.debug("Spawning {} {}s".format(number, entity_type))
         new_entities = []
-        for i in range(number):
+        for _ in range(number):
+            # TODO: Don't use locations that are in the same row or column as
+            # the cursor if a cursor is passed.
             available_locations = [location for location, entity
                                    in self._entities.items() if not entity]
+            if not available_locations:
+                break
             location = random.choice(available_locations)
             e = entity_type()
             self.place(e, location)
             new_entities.append(e)
-        logging.debug("Spawned {} {}".format(len(new_entities), entity_type))
         return new_entities
 
 class Entity:
