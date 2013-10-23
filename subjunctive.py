@@ -69,7 +69,7 @@ def make_location_class(grid_size):
 class World(pyglet.window.Window):
     background = None
     grid_offset = (0, 0)
-    grid_size = (16, 16)
+    grid_size = (8, 8)
     tile_size = (16, 16)
     window_caption = "Subjunctive!"
 
@@ -106,6 +106,30 @@ class World(pyglet.window.Window):
     def count(self, entity_type):
         return sum(1 for e in self._entities.values()
                    if isinstance(e, entity_type))
+
+    @classmethod
+    def load(cls, level_file, definitions_file):
+        # TODO: Load definitions from the file
+        types = {'a': Entity}
+
+        with open(level_file) as f:
+            lines = [line for line in f.readlines() if line.strip() != '']
+
+        width, height = len(lines[0]), len(lines)
+        world = cls()
+        world.grid_size = width, height
+
+        for ny, line in enumerate(lines, start=1):
+            y = height - ny
+            for x, char in enumerate(line):
+                try:
+                    entity_type = types[char]
+                except KeyError:
+                    logging.error("Character {!r} is not defined; ignoring")
+                else:
+                    world.place(entity_type(), world.Location(x, y))
+
+        return world
 
     def locate(self, entity):
         for location, suspect in self._entities.items():
@@ -232,7 +256,7 @@ def rotate(sprite, direction):
     rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}
     sprite.rotation = rotation[direction]
 
-def start(world, cursor):
+def start_game_with_keyboard_controlled_cursor(world, cursor):
     @world.event
     def on_text_motion(motion):
         try:
