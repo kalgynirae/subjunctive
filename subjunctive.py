@@ -98,6 +98,11 @@ class World(pyglet.window.Window):
         # Create a batch to draw the sprites
         self.batch = pyglet.graphics.Batch()
 
+        # Set up locations
+        self._entities = {self.Location(x, y): None
+                          for x in range(self.grid_size[0])
+                          for y in range(self.grid_size[1])}
+
     def clear(self):
         self._entities = {self.Location(x, y): None
                           for x in range(self.grid_size[0])
@@ -110,10 +115,10 @@ class World(pyglet.window.Window):
     @classmethod
     def load(cls, level_file, definitions_file):
         # TODO: Load definitions from the file
-        types = {'a': Entity}
+        types = {'-': None, 'a': Entity}
 
         with open(level_file) as f:
-            lines = [line for line in f.readlines() if line.strip() != '']
+            lines = [line for line in map(str.strip, f) if line != '']
 
         width, height = len(lines[0]), len(lines)
         world = cls()
@@ -125,9 +130,11 @@ class World(pyglet.window.Window):
                 try:
                     entity_type = types[char]
                 except KeyError:
-                    logging.error("Character {!r} is not defined; ignoring")
+                    logging.error("Character {!r} is not defined; ignoring"
+                                  "".format(char))
                 else:
-                    world.place(entity_type(), world.Location(x, y))
+                    if entity_type:
+                        world.place(entity_type(), world.Location(x, y))
 
         return world
 
@@ -227,6 +234,7 @@ class Entity:
         self.sprite = pyglet.sprite.Sprite(self.image, batch=world.batch)
         self.direction = direction
         self.name = name
+        self.world = world
 
     def __str__(self):
         return self.name
@@ -261,7 +269,7 @@ def start_game_with_keyboard_controlled_cursor(world, cursor):
     def on_text_motion(motion):
         try:
             world.spawn_stuff()
-        except NameError:
+        except AttributeError:
             pass
         directions = {pyglet.window.key.MOTION_LEFT: 'left',
                       pyglet.window.key.MOTION_DOWN: 'down',

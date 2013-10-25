@@ -1,5 +1,5 @@
-AB BA 
-BAC AB
-B CCAB
-      
+AB-BA-
+BAC-AB
+B-CCAB
+------
 AAAAAA

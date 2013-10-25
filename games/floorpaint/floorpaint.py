@@ -2,7 +2,8 @@ import argparse
 
 import subjunctive
 
-class Player(subjunctive.Entity): pass
+class Player(subjunctive.Entity):
+    pushable = True
 
 class World(subjunctive.World):
     grid_size = (8, 8)
@@ -15,4 +16,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
 
     world = World.load(args.level_file, 'levels/definitions.txt')
-    subjunctive.start_game_with_keyboard_controlled_cursor(world, Player())
+    player = Player(world)
+    world.place(player, world.center)
+    subjunctive.start_game_with_keyboard_controlled_cursor(world, player)
