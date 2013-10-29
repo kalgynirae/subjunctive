@@ -20,11 +20,9 @@ class Planet(subjunctive.World):
         self.tick_count = 0
 
     def setup(self):
-        obj_list = {'A': Recycle, 'B': Receptor, 'C': Hazard}
-        self.place_objects(obj_list, *self.read_level("level.txt"))
-        #self.spawn_random(Recycle, 25)
-        #self.spawn_random(Receptor, 7)
-        #self.spawn_random(Hazard, 7)
+        self.spawn_random(Recycle, 25)
+        self.spawn_random(Receptor, 7)
+        self.spawn_random(Hazard, 7)
 
     def spawn_stuff(self):
         # This should run everytime an action happens. Dunno if that's actually
@@ -92,6 +90,6 @@ if __name__ == '__main__':
             cursor = Cursor(world)
             world.place(cursor, world.center)
             world.setup()
-            subjunctive.start(world, cursor)
+            subjunctive.start_game_with_keyboard_controlled_cursor(world, cursor)
         except DeathError:
             print("You died.")
