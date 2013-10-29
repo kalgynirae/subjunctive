@@ -69,7 +69,7 @@ def make_location_class(grid_size):
 class World(pyglet.window.Window):
     background = None
     grid_offset = (0, 0)
-    grid_size = (16, 16)
+    grid_size = (8, 8)
     tile_size = (16, 16)
     window_caption = "Subjunctive!"
 
@@ -98,6 +98,11 @@ class World(pyglet.window.Window):
         # Create a batch to draw the sprites
         self.batch = pyglet.graphics.Batch()
 
+        # Set up locations
+        self._entities = {self.Location(x, y): None
+                          for x in range(self.grid_size[0])
+                          for y in range(self.grid_size[1])}
+
     def clear(self):
         self._entities = {self.Location(x, y): None
                           for x in range(self.grid_size[0])
@@ -106,6 +111,32 @@ class World(pyglet.window.Window):
     def count(self, entity_type):
         return sum(1 for e in self._entities.values()
                    if isinstance(e, entity_type))
+
+    @classmethod
+    def load(cls, level_file, definitions_file):
+        # TODO: Load definitions from the file
+        types = {'-': None, 'a': Entity}
+
+        with open(level_file) as f:
+            lines = [line for line in map(str.strip, f) if line != '']
+
+        width, height = len(lines[0]), len(lines)
+        world = cls()
+        world.grid_size = width, height
+
+        for ny, line in enumerate(lines, start=1):
+            y = height - ny
+            for x, char in enumerate(line):
+                try:
+                    entity_type = types[char]
+                except KeyError:
+                    logging.error("Character {!r} is not defined; ignoring"
+                                  "".format(char))
+                else:
+                    if entity_type:
+                        world.place(entity_type(), world.Location(x, y))
+
+        return world
 
     def locate(self, entity):
         for location, suspect in self._entities.items():
@@ -160,6 +191,23 @@ class World(pyglet.window.Window):
     def remove(self, entity):
         self._entities[self.locate(entity)] = None
 
+    def read_level(self, path):
+        columns = []
+        with open(path, "r") as leveltext_file:
+            rows = leveltext_file.read().splitlines()
+            for i in rows:
+                columns.append(i.split())
+        return rows, columns
+
+    def place_objects(self, obj_list, rows, columns):
+        for ly, i in enumerate(rows):
+            for lx, j in enumerate(columns[ly]):
+                try:
+                    e = obj_list[j]()
+                    self.place(e, self.Location(lx,self.grid_size[1]-ly-1))
+                except KeyError:
+                    pass
+
     def spawn_random(self, entity_type, number=1, cursor=None):
         logging.debug("Spawning {} {}s".format(number, entity_type))
         new_entities = []
@@ -186,6 +234,7 @@ class Entity:
         self.sprite = pyglet.sprite.Sprite(self.image, batch=world.batch)
         self.direction = direction
         self.name = name
+        self.world = world
 
     def __str__(self):
         return self.name
@@ -215,12 +264,12 @@ def rotate(sprite, direction):
     rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}
     sprite.rotation = rotation[direction]
 
-def start(world, cursor):
+def start_game_with_keyboard_controlled_cursor(world, cursor):
     @world.event
     def on_text_motion(motion):
         try:
             world.spawn_stuff()
-        except NameError:
+        except AttributeError:
             pass
         directions = {pyglet.window.key.MOTION_LEFT: 'left',
                       pyglet.window.key.MOTION_DOWN: 'down',
