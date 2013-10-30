@@ -176,20 +176,49 @@ class World(pyglet.window.Window):
     def push(self, entity, direction, pusher=God):
         if pusher is God:
             entity.direction = direction
-        try:
-            new_location = self.locate(entity).adjacent(direction)
-        except OutOfBounds:
-            return False
-        do_push = entity.respond_to_push(direction, pusher)
-        if do_push and self._entities[new_location] is not None:
-            do_push = self.push(self._entities[new_location], direction, entity)
-        if do_push:
-            self.remove(entity)
-            self.place(entity, new_location)
-        return do_push
 
-    def remove(self, entity):
-        self._entities[self.locate(entity)] = None
+
+        action = entity.respond_to_push(direction, pusher, self)
+        if action == "move":
+            try:
+                new_location = self.locate(entity).adjacent(direction)
+            except OutOfBounds:
+                return "stay"
+
+            if self._entities[new_location]:
+                neighbor_action = self.push(self._entities[new_location],
+                                            direction, entity)
+                if neighbor_action == "move":
+                    logging.debug("{} is moving (neighbor)".format(entity))
+                    self.remove(entity)
+                    self.place(entity, new_location)
+                    return "move"
+                elif neighbor_action == "consume":
+                    logging.debug("{} is being consumed".format(entity))
+                    self.remove(entity)
+                    return "move"
+                elif neighbor_action == "stay":
+                    logging.debug("{} is staying".format(entity))
+                    return "stay"
+                else:
+                    logging.debug("{} is doing {} (neighbor)".format(entity, action))
+                    return neighbor_action
+            else:
+                logging.debug("{} is moving (no neighbor)".format(entity))
+                self.remove(entity)
+                self.place(entity, new_location)
+                return "move"
+        elif action == "vanish":
+            logging.debug("{} is vanishing".format(entity))
+            self.remove(entity)
+            return "move"
+        elif action == "mad":
+            logging.debug("{} is madding".format(entity))
+            self.remove(entity)
+            return "consume"
+        else:
+            logging.debug("{} is doing {}".format(entity, action))
+            return action
 
     def read_level(self, path):
         columns = []
@@ -198,6 +227,15 @@ class World(pyglet.window.Window):
             for i in rows:
                 columns.append(i.split())
         return rows, columns
+
+    def remove(self, entity):
+        location = self.locate(entity)
+        self._entities[location] = None
+        return location
+
+    def replace(self, entity, new_entity):
+        location = self.remove(entity)
+        self.place(new_entity, location)
 
     def place_objects(self, obj_list, rows, columns):
         for ly, i in enumerate(rows):
@@ -228,12 +266,12 @@ class Entity:
     directional = False
     pushable = False
 
-    def __init__(self, world, *, direction='right', name="John Smith"):
+    def __init__(self, world, *, direction='right', name=None):
         # Create the sprite first to avoid problems with overridden setters
         # that try to access the sprite
         self.sprite = pyglet.sprite.Sprite(self.image, batch=world.batch)
         self.direction = direction
-        self.name = name
+        self.name = self.__class__.__name__ if name is None else name
         self.world = world
 
     def __str__(self):
@@ -257,8 +295,12 @@ class Entity:
     def image(self, image):
         self.sprite.image = image
 
-    def respond_to_push(self, direction, pusher):
-        return self.pushable
+    def respond_to_push(self, direction, pusher, world):
+        """Called to determine what should happen when the entity is pushed
+
+        Possible return values: "stay", "move", "vanish", "consume", "mad"
+        """
+        return "move" if self.pushable else "stay"
 
 def rotate(sprite, direction):
     rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}

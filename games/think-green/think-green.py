@@ -49,9 +49,9 @@ class Cursor(subjunctive.Entity):
 class Hazard(subjunctive.Entity):
     image = pyglet.resource.image('images/hazard.png')
 
-    def respond_to_push(self, direction, pusher):
+    def respond_to_push(self, direction, pusher, world):
         if isinstance(pusher, Neutralize):
-            raise Vanish
+            return "mad"
         raise DeathError
 
 class Neutralize(subjunctive.Entity):
@@ -78,6 +78,15 @@ class Receptor(subjunctive.Entity):
         self._fuel = fuel
         self.image = self.images[fuel]
 
+    def respond_to_push(self, direction, pusher, world):
+        if isinstance(pusher, Recycle):
+            if self.fuel + 1 < len(self.images):
+                self.fuel += 1
+            else:
+                world.replace(self, Neutralize(world))
+            return "consume"
+        return "stay"
+
 class Recycle(subjunctive.Entity):
     image = pyglet.resource.image('images/recycle.png')
     pushable = True
@@ -87,7 +96,7 @@ if __name__ == '__main__':
     while True:
         try:
             world.clear()
-            cursor = Cursor(world)
+            cursor = Cursor(world, name="John Smith")
             world.place(cursor, world.center)
             world.setup()
             subjunctive.start_game_with_keyboard_controlled_cursor(world, cursor)
