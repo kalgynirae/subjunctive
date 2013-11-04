@@ -332,4 +332,3 @@ def start_game_with_keyboard_controlled_cursor(world, cursor):
         if directions.get(motion, False):
             world.push(cursor, directions[motion])
     pyglet.app.run()
-
