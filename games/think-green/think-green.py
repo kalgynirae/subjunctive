@@ -33,13 +33,13 @@ class Planet(subjunctive.World):
         tc = self.tick_count ** 0.45
         if (self.tick_count % ((tc + 250) // tc) == 0 or
                 self.count(Recycle) < 5):
-            self.spawn_random(Recycle)
+            self.spawn_random(Recycle, cursor=cursor)
         if (self.tick_count % ((tc + 900) // tc) == 0 or
                 self.count(Receptor) < 1):
-            self.spawn_random(Receptor)
+            self.spawn_random(Receptor, cursor=cursor)
         if (self.tick_count % ((tc + 700) // tc) == 0 or
                 self.count(Hazard) < 1):
-            self.spawn_random(Hazard)
+            self.spawn_random(Hazard, cursor=cursor)
 
 class Cursor(subjunctive.Entity):
     directional = True

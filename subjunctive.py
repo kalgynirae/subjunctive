@@ -252,8 +252,20 @@ class World(pyglet.window.Window):
         for _ in range(number):
             # TODO: Don't use locations that are in the same row or column as
             # the cursor if a cursor is passed.
-            available_locations = [location for location, entity
-                                   in self._entities.items() if not entity]
+            if cursor is None:
+                available_locations = [location for location, entity
+                                       in self._entities.items() if not entity]
+            else:
+                available_locations = []
+                cursor_location = self.locate(cursor)
+                x_max, y_max = self.grid_size
+                invalid_xloc = [cursor_location.x, 0, x_max - 1]
+                invalid_yloc = [cursor_location.y, 0, y_max - 1]
+                for location, entity in self._entities.items():
+                    if not entity:
+                        _x, _y = location.x, location.y
+                        if not _x in invalid_xloc and not _y in invalid_yloc:
+                            available_locations.append(location)
             if not available_locations:
                 break
             location = random.choice(available_locations)
