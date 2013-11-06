@@ -70,6 +70,7 @@ class World(pyglet.window.Window):
     background = None
     grid_offset = (0, 0)
     grid_size = (8, 8)
+    score_offset = None
     tile_size = (16, 16)
     window_caption = "Subjunctive!"
 
@@ -102,6 +103,13 @@ class World(pyglet.window.Window):
         self._entities = {self.Location(x, y): None
                           for x in range(self.grid_size[0])
                           for y in range(self.grid_size[1])}
+
+        self.score = 0
+        if self.score_offset:
+            # Create a score label
+            x, y = self.score_offset
+            self.score_label = pyglet.text.Label(
+                "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
 
     def clear(self):
         self._entities = {self.Location(x, y): None
@@ -161,6 +169,11 @@ class World(pyglet.window.Window):
         if self.background:
             self.background.blit(0, 0)
         self.batch.draw()
+
+        # Draw the score
+        if self.score_offset:
+            self.score_label.text = str(self.score)
+            self.score_label.draw()
 
     def _pixels(self, location):
         return (location.x * self.tile_size[0] + self.grid_offset[0],
