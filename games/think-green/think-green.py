@@ -11,6 +11,7 @@ class Planet(subjunctive.World):
     background = pyglet.resource.image('images/green_planet.png')
     grid_offset = (231, 99)
     grid_size = (22, 22)
+    score_offset = (600, 40)
     tile_size = (13, 13)
     window_caption = "Think Green"
 
