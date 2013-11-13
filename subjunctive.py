@@ -1,5 +1,6 @@
 import logging
 import random
+import sys
 
 import pyglet
 import pyglet.gl as gl
@@ -332,7 +333,10 @@ def rotate(sprite, direction):
     sprite.rotation = rotation[direction]
 
 
-logging.basicConfig(level=logging.DEBUG)
+if '--debug' in sys.argv:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
 
 pyglet.resource.path.append('@subjunctive')
 pyglet.resource.reindex()
