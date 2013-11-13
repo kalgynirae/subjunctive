@@ -1,13 +1,14 @@
 import logging
 import random
+import sys
 
 import pyglet
 import pyglet.gl as gl
 
-logging.basicConfig(level=logging.DEBUG)
-
-pyglet.resource.path.append('@subjunctive')
-pyglet.resource.reindex()
+KEYBOARD_DIRECTIONS = {pyglet.window.key.MOTION_LEFT: 'left',
+                       pyglet.window.key.MOTION_DOWN: 'down',
+                       pyglet.window.key.MOTION_UP: 'up',
+                       pyglet.window.key.MOTION_RIGHT: 'right'}
 
 class God:
     __slots__ = []
@@ -331,17 +332,11 @@ def rotate(sprite, direction):
     rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}
     sprite.rotation = rotation[direction]
 
-def start_game_with_keyboard_controlled_cursor(world, cursor):
-    @world.event
-    def on_text_motion(motion):
-        try:
-            world.spawn_stuff()
-        except AttributeError:
-            pass
-        directions = {pyglet.window.key.MOTION_LEFT: 'left',
-                      pyglet.window.key.MOTION_DOWN: 'down',
-                      pyglet.window.key.MOTION_UP: 'up',
-                      pyglet.window.key.MOTION_RIGHT: 'right'}
-        if directions.get(motion, False):
-            world.push(cursor, directions[motion])
-    pyglet.app.run()
+
+if '--debug' in sys.argv:
+    logging.basicConfig(level=logging.DEBUG)
+else:
+    logging.basicConfig(level=logging.INFO)
+
+pyglet.resource.path.append('@subjunctive')
+pyglet.resource.reindex()
