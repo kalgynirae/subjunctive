@@ -17,7 +17,8 @@ class Planet(subjunctive.World):
 
     def __init__(self):
         super().__init__()
-        self.score = 0
+        self.combo = 1
+        self.score = 100
         self.tick_count = 0
 
     def setup(self):
@@ -25,9 +26,7 @@ class Planet(subjunctive.World):
         self.spawn_random(Receptor, 7)
         self.spawn_random(Hazard, 7)
 
-    def spawn_stuff(self):
-        # This should run everytime an action happens. Dunno if that's actually
-        # what Pyglet thinks it does, though.
+    def tick(self):
         self.score -= 1
         self.tick_count += 1
         logging.debug("Grid.tick_count={}".format(self.tick_count))
@@ -52,6 +51,8 @@ class Hazard(subjunctive.Entity):
 
     def respond_to_push(self, direction, pusher, world):
         if isinstance(pusher, Neutralize):
+            world.score += 1000 * int(world.combo**1.5)
+            world.combo += 1
             return "mad"
         raise DeathError
 
@@ -85,6 +86,8 @@ class Receptor(subjunctive.Entity):
                 self.fuel += 1
             else:
                 world.replace(self, Neutralize(world))
+            world.score += world.combo**2 * 50
+            world.combo += 1
             return "consume"
         return "stay"
 
@@ -94,12 +97,21 @@ class Recycle(subjunctive.Entity):
 
 if __name__ == '__main__':
     world = Planet()
-    while True:
-        try:
-            world.clear()
-            cursor = Cursor(world, name="John Smith")
-            world.place(cursor, world.center)
-            world.setup()
-            subjunctive.start_game_with_keyboard_controlled_cursor(world, cursor)
-        except DeathError:
-            print("You died.")
+    cursor = Cursor(world, name="John Smith")
+    world.place(cursor, world.center)
+    world.setup()
+
+    @world.event
+    def on_text_motion(motion):
+        world.tick()
+        previous_combo = world.combo
+        direction = subjunctive.KEYBOARD_DIRECTIONS.get(motion, False)
+        if direction:
+            world.push(cursor, direction)
+        if world.combo == previous_combo:
+            world.combo = 1
+
+    try:
+        pyglet.app.run()
+    except DeathError:
+        print("You died.")
