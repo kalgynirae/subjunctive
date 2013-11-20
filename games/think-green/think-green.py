@@ -21,25 +21,27 @@ class Planet(subjunctive.World):
         self.score = 100
         self.tick_count = 0
 
-    def setup(self):
-        self.spawn_random(Recycle, 25)
-        self.spawn_random(Receptor, 7)
-        self.spawn_random(Hazard, 7)
+    def setup(self, cursor):
+        self.place(cursor, self.center)
+        self.spawn_random(Recycle, number=25, avoid=self.center, edges=False)
+        self.spawn_random(Receptor, number=7, avoid=self.center, edges=False)
+        self.spawn_random(Hazard, number=7, avoid=self.center, edges=False)
 
-    def tick(self):
+    def tick(self, cursor):
         self.score -= 1
         self.tick_count += 1
         logging.debug("Grid.tick_count={}".format(self.tick_count))
         tc = self.tick_count ** 0.45
+        cursor_loc = self.locate(cursor)
         if (self.tick_count % ((tc + 250) // tc) == 0 or
                 self.count(Recycle) < 5):
-            self.spawn_random(Recycle, cursor=cursor)
+            self.spawn_random(Recycle, avoid=cursor_loc, edges=False)
         if (self.tick_count % ((tc + 900) // tc) == 0 or
                 self.count(Receptor) < 1):
-            self.spawn_random(Receptor, cursor=cursor)
+            self.spawn_random(Receptor, avoid=cursor_loc, edges=False)
         if (self.tick_count % ((tc + 700) // tc) == 0 or
                 self.count(Hazard) < 1):
-            self.spawn_random(Hazard, cursor=cursor)
+            self.spawn_random(Hazard, avoid=cursor_loc, edges=False)
 
 class Cursor(subjunctive.Entity):
     directional = True
@@ -98,12 +100,11 @@ class Recycle(subjunctive.Entity):
 if __name__ == '__main__':
     world = Planet()
     cursor = Cursor(world, name="John Smith")
-    world.place(cursor, world.center)
-    world.setup()
+    world.setup(cursor)
 
     @world.event
     def on_text_motion(motion):
-        world.tick()
+        world.tick(cursor)
         previous_combo = world.combo
         direction = subjunctive.KEYBOARD_DIRECTIONS.get(motion, False)
         if direction:
