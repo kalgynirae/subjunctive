@@ -191,29 +191,28 @@ class World(pyglet.window.Window):
         if pusher is God:
             entity.direction = direction
 
-
         action = entity.respond_to_push(direction, pusher, self)
-        if action == "move":
+        if isinstance(action, actions.MoveAction):
             try:
                 new_location = self.locate(entity).adjacent(direction)
             except OutOfBounds:
-                return "stay"
+                return actions.StayAction()
 
             if self._entities[new_location]:
                 neighbor_action = self.push(self._entities[new_location],
                                             direction, entity)
-                if neighbor_action == "move":
+                if isinstance(neighbor_action, actions.MoveAction):
                     logging.debug("{} is moving (neighbor)".format(entity))
                     self.remove(entity)
                     self.place(entity, new_location)
-                    return "move"
-                elif neighbor_action == "consume":
+                    return actions.MoveAction()
+                elif isinstance(neighbor_action, actions.ConsumeAction):
                     logging.debug("{} is being consumed".format(entity))
                     self.remove(entity)
-                    return "move"
-                elif neighbor_action == "stay":
+                    return actions.MoveAction()
+                elif isinstance(neighbor_action, actions.StayAction):
                     logging.debug("{} is staying".format(entity))
-                    return "stay"
+                    return actions.StayAction()
                 else:
                     logging.debug("{} is doing {} (neighbor)".format(entity, action))
                     return neighbor_action
@@ -221,15 +220,15 @@ class World(pyglet.window.Window):
                 logging.debug("{} is moving (no neighbor)".format(entity))
                 self.remove(entity)
                 self.place(entity, new_location)
-                return "move"
-        elif action == "vanish":
+                return actions.MoveAction()
+        elif isinstance(action, actions.VanishAction):
             logging.debug("{} is vanishing".format(entity))
             self.remove(entity)
-            return "move"
-        elif action == "mad":
+            return actions.VanishAction()
+        elif isinstance(action, actions.VanishAction):
             logging.debug("{} is madding".format(entity))
             self.remove(entity)
-            return "consume"
+            return actions.VanishAction()
         else:
             logging.debug("{} is doing {}".format(entity, action))
             return action
