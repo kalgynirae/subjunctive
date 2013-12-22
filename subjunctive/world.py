@@ -5,10 +5,7 @@ import sys
 import pyglet
 import pyglet.gl as gl
 
-KEYBOARD_DIRECTIONS = {pyglet.window.key.MOTION_LEFT: 'left',
-                       pyglet.window.key.MOTION_DOWN: 'down',
-                       pyglet.window.key.MOTION_UP: 'up',
-                       pyglet.window.key.MOTION_RIGHT: 'right'}
+from . import actions
 
 class God:
     __slots__ = []
@@ -282,51 +279,6 @@ class World(pyglet.window.Window):
             new_entities.append(entity)
             available_locations.remove(location)
         return new_entities
-
-class Entity:
-    directional = False
-    pushable = False
-
-    def __init__(self, world, *, direction='right', name=None):
-        # Create the sprite first to avoid problems with overridden setters
-        # that try to access the sprite
-        self.sprite = pyglet.sprite.Sprite(self.image, batch=world.batch)
-        self.direction = direction
-        self.name = self.__class__.__name__ if name is None else name
-        self.world = world
-
-    def __str__(self):
-        return self.name
-
-    @property
-    def direction(self):
-        return self._direction
-
-    @direction.setter
-    def direction(self, direction):
-        self._direction = direction
-        if self.directional:
-            rotate(self.sprite, direction)
-
-    @property
-    def image(self):
-        return pyglet.resource.image('images/default.png')
-
-    @image.setter
-    def image(self, image):
-        self.sprite.image = image
-
-    def respond_to_push(self, direction, pusher, world):
-        """Called to determine what should happen when the entity is pushed
-
-        Possible return values: "stay", "move", "vanish", "consume", "mad"
-        """
-        return "move" if self.pushable else "stay"
-
-def rotate(sprite, direction):
-    rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}
-    sprite.rotation = rotation[direction]
-
 
 if '--debug' in sys.argv:
     logging.basicConfig(level=logging.DEBUG)
