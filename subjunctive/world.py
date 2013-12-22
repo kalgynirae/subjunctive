@@ -14,7 +14,7 @@ God = God()
 class OutOfBounds(Exception):
     pass
 
-def make_location_class(grid_size):
+def _make_location_class(grid_size):
     """Make a specialized Location class that validates its input
 
     Instances of the returned class will raise an exception if they are
@@ -86,12 +86,15 @@ class World(pyglet.window.Window):
         super().__init__(width=width, height=height,
                          caption=self.window_caption)
 
+        # Set up event handlers (TODO: make this less weird)
+        self.on_draw = self._draw
+
         # Enable rendering with transparency
         gl.glEnable(gl.GL_BLEND)
         gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
         # Create a grid-aware Location class
-        self.Location = make_location_class(self.grid_size)
+        self.Location = _make_location_class(self.grid_size)
         self.Location.__qualname__ = self.__class__.__qualname__ + ".Location"
 
         # Create a batch to draw the sprites
@@ -115,11 +118,13 @@ class World(pyglet.window.Window):
                           for y in range(self.grid_size[1])}
 
     def count(self, entity_type):
+        """Return the number of entity_type entities currently in the world"""
         return sum(1 for e in self._entities.values()
                    if isinstance(e, entity_type))
 
     @classmethod
     def load(cls, level_file, definitions_file):
+        """Part of incomplete level-file-loading code"""
         # TODO: Load definitions from the file
         types = {'-': None, 'a': Entity}
 
@@ -145,12 +150,16 @@ class World(pyglet.window.Window):
         return world
 
     def locate(self, entity):
+        """Return entity's location in the world
+
+        If entity is not in the world, ValueError is raised.
+        """
         for location, suspect in self._entities.items():
             if suspect is entity:
                 return location
         raise ValueError("{} not in world".format(entity))
 
-    def on_draw(self):
+    def _draw(self):
         # Update the position of each sprite
         for location, entity in self._entities.items():
             if entity:
@@ -178,6 +187,10 @@ class World(pyglet.window.Window):
                 location.y * self.tile_size[1] + self.grid_offset[1])
 
     def place(self, entity, location):
+        """Place entity at location
+
+        If there is already an entity at location, ValueError is raised.
+        """
         logging.debug("Placing {} at {}".format(entity, location))
         if self._entities[location] is not None:
             raise ValueError("Location {} already contains {}"
@@ -185,6 +198,7 @@ class World(pyglet.window.Window):
         self._entities[location] = entity
 
     def push(self, entity, direction, pusher=God):
+        """Push entity in the given direction"""
         if pusher is God:
             entity.direction = direction
 
@@ -230,7 +244,8 @@ class World(pyglet.window.Window):
             logging.debug("{} is doing {}".format(entity, action))
             return action
 
-    def read_level(self, path):
+    def _read_level(self, path):
+        """Part of incomplete level-file-loading code"""
         columns = []
         with open(path, "r") as leveltext_file:
             rows = leveltext_file.read().splitlines()
@@ -239,15 +254,24 @@ class World(pyglet.window.Window):
         return rows, columns
 
     def remove(self, entity):
+        """Remove entity from the world
+
+        If entity is not in the world, ValueError is raised.
+        """
         location = self.locate(entity)
         self._entities[location] = None
         return location
 
     def replace(self, entity, new_entity):
+        """Replace entity with new_entity
+
+        If entity is not in the world, ValueError is raised.
+        """
         location = self.remove(entity)
         self.place(new_entity, location)
 
-    def place_objects(self, obj_list, rows, columns):
+    def _place_objects(self, obj_list, rows, columns):
+        """Part of incomplete level-file-loading code"""
         for ly, i in enumerate(rows):
             for lx, j in enumerate(columns[ly]):
                 try:
@@ -257,6 +281,13 @@ class World(pyglet.window.Window):
                     pass
 
     def spawn_random(self, entity_type, number=1, avoid=None, edges=True):
+        """Spawn number new entity_types at random locations
+
+        If avoid is an entity, new entities will not spawn in the same row or
+        column as that entity.
+
+        If edges is True, entities can spawn on the edges of the board.
+        """
         logging.debug("Spawning {} {}s".format(number, entity_type))
         invalid_x, invalid_y = [], []
         if avoid:

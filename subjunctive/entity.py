@@ -34,7 +34,9 @@ class Entity:
         self.sprite.image = image
 
     def respond_to_push(self, direction, pusher, world):
-        """Called to determine what should happen when the entity is pushed
+        """Return what should happen when the entity is pushed
+
+        Entities can override this method to get special behavior.
 
         Possible return values: "stay", "move", "vanish", "consume", "mad"
         """
