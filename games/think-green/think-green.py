@@ -7,7 +7,7 @@ import subjunctive
 class DeathError(Exception):
     pass
 
-class Planet(subjunctive.World):
+class Planet(subjunctive.world.World):
     background = pyglet.resource.image('images/green_planet.png')
     grid_offset = (231, 99)
     grid_size = (22, 22)
@@ -43,12 +43,12 @@ class Planet(subjunctive.World):
                 self.count(Hazard) < 1):
             self.spawn_random(Hazard, avoid=cursor_loc, edges=False)
 
-class Cursor(subjunctive.Entity):
+class Cursor(subjunctive.entity.Entity):
     directional = True
     image = pyglet.resource.image('images/cursor.png')
     pushable = True
 
-class Hazard(subjunctive.Entity):
+class Hazard(subjunctive.entity.Entity):
     image = pyglet.resource.image('images/hazard.png')
 
     def respond_to_push(self, direction, pusher, world):
@@ -58,11 +58,11 @@ class Hazard(subjunctive.Entity):
             return "mad"
         raise DeathError
 
-class Neutralize(subjunctive.Entity):
+class Neutralize(subjunctive.entity.Entity):
     image = pyglet.resource.image('images/neutralize.png')
     pushable = True
 
-class Receptor(subjunctive.Entity):
+class Receptor(subjunctive.entity.Entity):
     images = [pyglet.resource.image('images/receptor0.png'),
               pyglet.resource.image('images/receptor4.png'),
               pyglet.resource.image('images/receptor3.png'),
@@ -93,7 +93,7 @@ class Receptor(subjunctive.Entity):
             return "consume"
         return "stay"
 
-class Recycle(subjunctive.Entity):
+class Recycle(subjunctive.entity.Entity):
     image = pyglet.resource.image('images/recycle.png')
     pushable = True
 
