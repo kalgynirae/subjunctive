@@ -5,8 +5,6 @@ import sys
 import pyglet
 import pyglet.gl as gl
 
-from . import actions
-
 class God:
     __slots__ = []
 God = God()
@@ -199,50 +197,7 @@ class World(pyglet.window.Window):
 
     def push(self, entity, direction, pusher=God):
         """Push entity in the given direction"""
-        if pusher is God:
-            entity.direction = direction
-
-        action = entity.respond_to_push(direction, pusher, self)
-        if isinstance(action, actions.MoveAction):
-            try:
-                new_location = self.locate(entity).adjacent(direction)
-            except OutOfBounds:
-                return actions.StayAction()
-
-            if self._entities[new_location]:
-                neighbor_action = self.push(self._entities[new_location],
-                                            direction, entity)
-                if isinstance(neighbor_action, actions.MoveAction):
-                    logging.debug("{} is moving (neighbor)".format(entity))
-                    self.remove(entity)
-                    self.place(entity, new_location)
-                    return actions.MoveAction()
-                elif isinstance(neighbor_action, actions.ConsumeAction):
-                    logging.debug("{} is being consumed".format(entity))
-                    self.remove(entity)
-                    return actions.MoveAction()
-                elif isinstance(neighbor_action, actions.StayAction):
-                    logging.debug("{} is staying".format(entity))
-                    return actions.StayAction()
-                else:
-                    logging.debug("{} is doing {} (neighbor)".format(entity, action))
-                    return neighbor_action
-            else:
-                logging.debug("{} is moving (no neighbor)".format(entity))
-                self.remove(entity)
-                self.place(entity, new_location)
-                return actions.MoveAction()
-        elif isinstance(action, actions.VanishAction):
-            logging.debug("{} is vanishing".format(entity))
-            self.remove(entity)
-            return actions.VanishAction()
-        elif isinstance(action, actions.VanishAction):
-            logging.debug("{} is madding".format(entity))
-            self.remove(entity)
-            return actions.VanishAction()
-        else:
-            logging.debug("{} is doing {}".format(entity, action))
-            return action
+        entity.respond_to_push(direction, pusher, self)
 
     def _read_level(self, path):
         """Part of incomplete level-file-loading code"""

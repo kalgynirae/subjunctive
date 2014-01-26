@@ -1,5 +1,3 @@
-import logging
-
 import pyglet
 
 import subjunctive
@@ -30,7 +28,6 @@ class Planet(subjunctive.world.World):
     def tick(self, cursor):
         self.score -= 1
         self.tick_count += 1
-        logging.debug("Grid.tick_count={}".format(self.tick_count))
         tc = self.tick_count ** 0.45
         cursor_loc = self.locate(cursor)
         if (self.tick_count % ((tc + 250) // tc) == 0 or
@@ -55,12 +52,23 @@ class Hazard(subjunctive.entity.Entity):
         if isinstance(pusher, Neutralize):
             world.score += 1000 * int(world.combo**1.5)
             world.combo += 1
-            return "mad"
-        raise DeathError
+            world.remove(pusher)
+            world.remove(self)
+        else:
+            raise DeathError
 
 class Neutralize(subjunctive.entity.Entity):
     image = pyglet.resource.image('images/neutralize.png')
     pushable = True
+
+class PushRedirector(subjunctive.entity.Entity):
+    image = pyglet.resource.image('images/cursor.png')
+
+    def respond_to_push(self, direction, pusher, world):
+        if direction == 'right':
+            push(world, 'up')
+        else:
+            subjunctive.actions.move(world, self, direction)
 
 class Receptor(subjunctive.entity.Entity):
     images = [pyglet.resource.image('images/receptor0.png'),
@@ -84,14 +92,12 @@ class Receptor(subjunctive.entity.Entity):
 
     def respond_to_push(self, direction, pusher, world):
         if isinstance(pusher, Recycle):
-            if self.fuel + 1 < len(self.images):
-                self.fuel += 1
-            else:
-                world.replace(self, Neutralize(world))
+            self.fuel += 1
             world.score += world.combo**2 * 50
             world.combo += 1
-            return "consume"
-        return "stay"
+            if self.fuel == len(self.images):
+                world.replace(self, Neutralize(world))
+            world.remove(pusher)
 
 class Recycle(subjunctive.entity.Entity):
     image = pyglet.resource.image('images/recycle.png')

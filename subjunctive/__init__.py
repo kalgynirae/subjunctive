@@ -1,5 +1,6 @@
 import pyglet
 
+from . import actions
 from . import entity
 from . import world
 
