@@ -2,8 +2,7 @@ import logging
 import random
 import sys
 
-import pyglet
-import pyglet.gl as gl
+import sdl2.ext
 
 class God:
     __slots__ = []
@@ -62,41 +61,31 @@ def _make_location_class(grid_size):
 
     return Location
 
-class World(pyglet.window.Window):
+class World:
     background = None
     grid_offset = (0, 0)
     grid_size = (8, 8)
     score_offset = None
     tile_size = (16, 16)
-    window_caption = "Subjunctive!"
+    window_title = "Subjunctive!"
 
     @property
     def center(self):
         return self.Location(self.grid_size[0] // 2, self.grid_size[1] // 2)
 
     def __init__(self):
+        super().__init__()
+
         if self.background is not None:
-            width = self.background.width
-            height = self.background.height
+            width = self.background.w
+            height = self.background.h
         else:
             width = self.grid_size[0] * self.tile_size[0]
             height = self.grid_size[1] * self.tile_size[1]
-        super().__init__(width=width, height=height,
-                         caption=self.window_caption)
-
-        # Set up event handlers (TODO: make this less weird)
-        self.on_draw = self._draw
-
-        # Enable rendering with transparency
-        gl.glEnable(gl.GL_BLEND)
-        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
 
         # Create a grid-aware Location class
         self.Location = _make_location_class(self.grid_size)
         self.Location.__qualname__ = self.__class__.__qualname__ + ".Location"
-
-        # Create a batch to draw the sprites
-        self.batch = pyglet.graphics.Batch()
 
         # Set up locations
         self._entities = {self.Location(x, y): None
@@ -107,8 +96,11 @@ class World(pyglet.window.Window):
         if self.score_offset:
             # Create a score label
             x, y = self.score_offset
-            self.score_label = pyglet.text.Label(
-                "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
+            #self.score_label = pyglet.text.Label(
+            #    "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
+
+        self._window = sdl2.ext.Window(self.window_title, (width, height))
+        self._surface = self._window.get_surface()
 
     def clear(self):
         self._entities = {self.Location(x, y): None
@@ -158,27 +150,29 @@ class World(pyglet.window.Window):
         raise ValueError("{} not in world".format(entity))
 
     def _draw(self):
+        if self.background:
+            sdl2.SDL_BlitSurface(self.background, None, self._surface, None)
         # Update the position of each sprite
         for location, entity in self._entities.items():
             if entity:
-                s = entity.sprite
+                w, h = entity.image.w, entity.image.h
                 x, y = self._pixels(location)
-                if s.rotation == 90:
-                    y += s.image.height
-                elif s.rotation == 180:
-                    x += s.image.width
-                    y += s.image.height
-                elif s.rotation == 270:
-                    x += s.image.width
-                s.set_position(x, y)
-        if self.background:
-            self.background.blit(0, 0)
-        self.batch.draw()
+                #if s.rotation == 90:
+                #    y += s.surface.h
+                #elif s.rotation == 180:
+                #    x += s.surface.w
+                #    y += s.surface.h
+                #elif s.rotation == 270:
+                #    x += s.surface.w
+                #s.position = (x, y)
+                sdl2.SDL_BlitSurface(entity.image, None, self._surface,
+                                     sdl2.SDL_Rect(x, y, w, h))
 
         # Draw the score
-        if self.score_offset:
-            self.score_label.text = str(self.score)
-            self.score_label.draw()
+        #if self.score_offset:
+        #    self.score_label.text = str(self.score)
+        #    self.score_label.draw()
+        self._window.refresh()
 
     def _pixels(self, location):
         return (location.x * self.tile_size[0] + self.grid_offset[0],
@@ -270,6 +264,3 @@ if '--debug' in sys.argv:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
-
-pyglet.resource.path.append('@subjunctive')
-pyglet.resource.reindex()

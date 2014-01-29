@@ -1,12 +1,14 @@
-import pyglet
+import os.path
 
 import subjunctive
+
+subjunctive.add_path(os.path.dirname(__file__))
 
 class DeathError(Exception):
     pass
 
 class Planet(subjunctive.world.World):
-    background = pyglet.resource.image('images/green_planet.png')
+    background = subjunctive.image('images/green_planet.png')
     grid_offset = (231, 99)
     grid_size = (22, 22)
     score_offset = (600, 40)
@@ -24,6 +26,7 @@ class Planet(subjunctive.world.World):
         self.spawn_random(Recycle, number=25, avoid=self.center, edges=False)
         self.spawn_random(Receptor, number=7, avoid=self.center, edges=False)
         self.spawn_random(Hazard, number=7, avoid=self.center, edges=False)
+        self._window.show()
 
     def tick(self, cursor):
         self.score -= 1
@@ -42,11 +45,11 @@ class Planet(subjunctive.world.World):
 
 class Cursor(subjunctive.entity.Entity):
     directional = True
-    image = pyglet.resource.image('images/cursor.png')
+    image = subjunctive.image('images/cursor.png')
     pushable = True
 
 class Hazard(subjunctive.entity.Entity):
-    image = pyglet.resource.image('images/hazard.png')
+    image = subjunctive.image('images/hazard.png')
 
     def respond_to_push(self, direction, pusher, world):
         if isinstance(pusher, Neutralize):
@@ -58,11 +61,11 @@ class Hazard(subjunctive.entity.Entity):
             raise DeathError
 
 class Neutralize(subjunctive.entity.Entity):
-    image = pyglet.resource.image('images/neutralize.png')
+    image = subjunctive.image('images/neutralize.png')
     pushable = True
 
 class PushRedirector(subjunctive.entity.Entity):
-    image = pyglet.resource.image('images/cursor.png')
+    image = subjunctive.image('images/cursor.png')
 
     def respond_to_push(self, direction, pusher, world):
         if direction == 'right':
@@ -71,24 +74,19 @@ class PushRedirector(subjunctive.entity.Entity):
             subjunctive.actions.move(world, self, direction)
 
 class Receptor(subjunctive.entity.Entity):
-    images = [pyglet.resource.image('images/receptor0.png'),
-              pyglet.resource.image('images/receptor4.png'),
-              pyglet.resource.image('images/receptor3.png'),
-              pyglet.resource.image('images/receptor2.png'),
-              pyglet.resource.image('images/receptor1.png')]
+    images = [subjunctive.image('images/receptor0.png'),
+              subjunctive.image('images/receptor4.png'),
+              subjunctive.image('images/receptor3.png'),
+              subjunctive.image('images/receptor2.png'),
+              subjunctive.image('images/receptor1.png')]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fuel = 0
 
     @property
-    def fuel(self):
-        return self._fuel
-
-    @fuel.setter
-    def fuel(self, fuel):
-        self._fuel = fuel
-        self.image = self.images[fuel]
+    def image(self):
+        return self.images[self.fuel]
 
     def respond_to_push(self, direction, pusher, world):
         if isinstance(pusher, Recycle):
@@ -100,7 +98,7 @@ class Receptor(subjunctive.entity.Entity):
             world.remove(pusher)
 
 class Recycle(subjunctive.entity.Entity):
-    image = pyglet.resource.image('images/recycle.png')
+    image = subjunctive.image('images/recycle.png')
     pushable = True
 
 if __name__ == '__main__':
@@ -108,17 +106,15 @@ if __name__ == '__main__':
     cursor = Cursor(world, name="John Smith")
     world.setup(cursor)
 
-    @world.event
-    def on_text_motion(motion):
-        world.tick(cursor)
-        previous_combo = world.combo
-        direction = subjunctive.KEYBOARD_DIRECTIONS.get(motion, False)
+    def keydown_callback(direction):
         if direction:
+            world.tick(cursor)
+            previous_combo = world.combo
             world.push(cursor, direction)
-        if world.combo == previous_combo:
-            world.combo = 1
+            if world.combo == previous_combo:
+                world.combo = 1
 
     try:
-        pyglet.app.run()
+        subjunctive.run(world, keydown_callback)
     except DeathError:
         print("You died.")

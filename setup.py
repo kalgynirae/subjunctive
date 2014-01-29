@@ -1,13 +1,14 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 
 setup(
     name='subjunctive',
     version='0.1',
-    packages=['subjunctive'],
     install_requires=[
-        'pyglet ==1.2alpha1',
+        'pysdl2 >=0.8.0',
     ],
-    dependency_links=[
-        'hg+https://code.google.com/p/pyglet/#egg=pyglet-1.2alpha1',
+    packages=find_packages(),
+    scripts=[
+        'games/think-green/think-green.py',
+        'games/floorpaint/floorpaint.py',
     ],
 )
