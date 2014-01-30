@@ -1,5 +1,8 @@
 import os.path
 
+import sdl2
+import sdl2.ext
+
 import subjunctive
 
 subjunctive.add_path(os.path.dirname(__file__))
@@ -9,7 +12,7 @@ class DeathError(Exception):
 
 class Planet(subjunctive.world.World):
     background = subjunctive.image('images/green_planet.png')
-    grid_offset = (231, 99)
+    grid_offset = (231, 215)
     grid_size = (22, 22)
     score_offset = (600, 40)
     tile_size = (13, 13)
@@ -51,12 +54,12 @@ class Cursor(subjunctive.entity.Entity):
 class Hazard(subjunctive.entity.Entity):
     image = subjunctive.image('images/hazard.png')
 
-    def respond_to_push(self, direction, pusher, world):
+    def push(self, direction, pusher=None):
         if isinstance(pusher, Neutralize):
-            world.score += 1000 * int(world.combo**1.5)
-            world.combo += 1
-            world.remove(pusher)
-            world.remove(self)
+            self.world.score += 1000 * int(self.world.combo**1.5)
+            self.world.combo += 1
+            self.world.remove(pusher)
+            self.world.remove(self)
         else:
             raise DeathError
 
@@ -67,11 +70,11 @@ class Neutralize(subjunctive.entity.Entity):
 class PushRedirector(subjunctive.entity.Entity):
     image = subjunctive.image('images/cursor.png')
 
-    def respond_to_push(self, direction, pusher, world):
+    def push(self, direction, pusher=None):
         if direction == 'right':
-            push(world, 'up')
+            subjunctive.actions.push(self.world, 'up')
         else:
-            subjunctive.actions.move(world, self, direction)
+            subjunctive.actions.move(self.world, self, direction)
 
 class Receptor(subjunctive.entity.Entity):
     images = [subjunctive.image('images/receptor0.png'),
@@ -88,33 +91,41 @@ class Receptor(subjunctive.entity.Entity):
     def image(self):
         return self.images[self.fuel]
 
-    def respond_to_push(self, direction, pusher, world):
+    def push(self, direction, pusher=None):
         if isinstance(pusher, Recycle):
             self.fuel += 1
-            world.score += world.combo**2 * 50
-            world.combo += 1
+            self.world.score += self.world.combo**2 * 50
+            self.world.combo += 1
             if self.fuel == len(self.images):
-                world.replace(self, Neutralize(world))
-            world.remove(pusher)
+                self.world.replace(self, Neutralize(self.world))
+            self.world.remove(pusher)
 
 class Recycle(subjunctive.entity.Entity):
     image = subjunctive.image('images/recycle.png')
     pushable = True
 
 if __name__ == '__main__':
+    sdl2.ext.init()
     world = Planet()
     cursor = Cursor(world, name="John Smith")
     world.setup(cursor)
+    world._draw()
 
     def keydown_callback(direction):
         if direction:
             world.tick(cursor)
             previous_combo = world.combo
-            world.push(cursor, direction)
+            cursor.move(direction)
             if world.combo == previous_combo:
                 world.combo = 1
 
-    try:
-        subjunctive.run(world, keydown_callback)
-    except DeathError:
-        print("You died.")
+    running = True
+    while running:
+        events = sdl2.ext.get_events()
+        for event in events:
+            if event.type == sdl2.SDL_QUIT:
+                running = False
+            elif event.type == sdl2.SDL_KEYDOWN:
+                keydown_callback(subjunctive.KEYBOARD_DIRECTIONS.get(event.key.keysym.sym))
+        world._draw()
+        sdl2.timer.SDL_Delay(10)

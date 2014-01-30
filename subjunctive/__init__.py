@@ -4,7 +4,6 @@ import sys
 import sdl2
 import sdl2.ext
 
-from . import actions
 from . import entity
 from . import world
 
@@ -27,15 +26,3 @@ def image(name):
         else:
             return surface
     raise KeyError("image %r could not be found" % name)
-
-def run(window, keydown_callback):
-    running = True
-    while running:
-        events = sdl2.ext.get_events()
-        for event in events:
-            if event.type == sdl2.SDL_QUIT:
-                running = False
-            elif event.type == sdl2.SDL_KEYDOWN:
-                keydown_callback(KEYBOARD_DIRECTIONS.get(event.key.keysym.sym))
-        window._draw()
-        sdl2.timer.SDL_Delay(10)

@@ -1,12 +1,9 @@
+import itertools
 import logging
 import random
 import sys
 
 import sdl2.ext
-
-class God:
-    __slots__ = []
-God = God()
 
 class OutOfBounds(Exception):
     pass
@@ -51,9 +48,9 @@ def _make_location_class(grid_size):
             if direction == 'left':
                 return self.__class__(self.x - 1, self.y)
             elif direction == 'down':
-                return self.__class__(self.x, self.y - 1)
-            elif direction == 'up':
                 return self.__class__(self.x, self.y + 1)
+            elif direction == 'up':
+                return self.__class__(self.x, self.y - 1)
             elif direction == 'right':
                 return self.__class__(self.x + 1, self.y)
             else:
@@ -112,6 +109,32 @@ class World:
         return sum(1 for e in self._entities.values()
                    if isinstance(e, entity_type))
 
+    def _draw(self):
+        surface = self._window.get_surface()
+        if self.background:
+            sdl2.SDL_BlitSurface(self.background, None, surface, None)
+        # Update the position of each sprite
+        for location, entity in self._entities.items():
+            if entity:
+                w, h = entity.image.w, entity.image.h
+                x, y = self._pixels(location)
+                #if s.rotation == 90:
+                #    y += s.surface.h
+                #elif s.rotation == 180:
+                #    x += s.surface.w
+                #    y += s.surface.h
+                #elif s.rotation == 270:
+                #    x += s.surface.w
+                #s.position = (x, y)
+                sdl2.SDL_BlitSurface(entity.image, None, surface,
+                                     sdl2.SDL_Rect(x, y))
+
+        # Draw the score
+        #if self.score_offset:
+        #    self.score_label.text = str(self.score)
+        #    self.score_label.draw()
+        self._window.refresh()
+
     @classmethod
     def load(cls, level_file, definitions_file):
         """Part of incomplete level-file-loading code"""
@@ -149,31 +172,6 @@ class World:
                 return location
         raise ValueError("{} not in world".format(entity))
 
-    def _draw(self):
-        if self.background:
-            sdl2.SDL_BlitSurface(self.background, None, self._surface, None)
-        # Update the position of each sprite
-        for location, entity in self._entities.items():
-            if entity:
-                w, h = entity.image.w, entity.image.h
-                x, y = self._pixels(location)
-                #if s.rotation == 90:
-                #    y += s.surface.h
-                #elif s.rotation == 180:
-                #    x += s.surface.w
-                #    y += s.surface.h
-                #elif s.rotation == 270:
-                #    x += s.surface.w
-                #s.position = (x, y)
-                sdl2.SDL_BlitSurface(entity.image, None, self._surface,
-                                     sdl2.SDL_Rect(x, y, w, h))
-
-        # Draw the score
-        #if self.score_offset:
-        #    self.score_label.text = str(self.score)
-        #    self.score_label.draw()
-        self._window.refresh()
-
     def _pixels(self, location):
         return (location.x * self.tile_size[0] + self.grid_offset[0],
                 location.y * self.tile_size[1] + self.grid_offset[1])
@@ -188,10 +186,6 @@ class World:
             raise ValueError("Location {} already contains {}"
                              "".format(location, self._entities[location]))
         self._entities[location] = entity
-
-    def push(self, entity, direction, pusher=God):
-        """Push entity in the given direction"""
-        entity.respond_to_push(direction, pusher, self)
 
     def _read_level(self, path):
         """Part of incomplete level-file-loading code"""
