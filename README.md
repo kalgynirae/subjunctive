@@ -5,6 +5,28 @@ early development stages and things are likely to change a lot!
 
 * * *
 
+## Status of the games
+
+### Think Green
+
+**Think Green** is complete except for the following things, which are
+totally missing:
+
+*   title screen / death screen
+*   score display
+*   music
+
+### Floorpaint
+
+**Floorpaint** has partially complete level-file-loading, but that's
+about it. It is missing:
+
+*   core game mechanics (currently you can cross over your path)
+*   level generation
+*   graphics
+*   title screen / instructions
+*   music
+
 ## Installation / usage
 
 Install these dependencies:
@@ -12,8 +34,8 @@ Install these dependencies:
 *   [Python 3.3+] and [virtualenv]
 *   [sdl2], [sdl2_gfx], [sdl2_image], [sdl2_mixer]
 
-> Hint: If you're not already using Linux, now would be a good time to
-> consider doing so. Installing all this stuff would be as simple as
+> **Hint:** If you're not already using Linux, now would be a good time
+> to consider doing so. Installing all this stuff would be as simple as
 >
 >     $ pacman -S python3 python3-virtualenv sdl2 sdl2_gfx sdl2_image sdl2_mixer
 
