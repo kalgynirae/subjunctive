@@ -5,15 +5,15 @@ import sdl2.ext
 
 import subjunctive
 
-subjunctive.add_path(os.path.dirname(__file__))
+subjunctive.resource.add_path(os.path.dirname(__file__))
 
 class DeathError(Exception):
     pass
 
 class Planet(subjunctive.world.World):
-    background = subjunctive.image('images/green_planet.png')
+    background = subjunctive.resource.image('images/green_planet.png')
+    grid = subjunctive.grid.Grid(22, 22)
     grid_offset = (231, 215)
-    grid_size = (22, 22)
     score_offset = (600, 40)
     tile_size = (13, 13)
     window_caption = "Think Green"
@@ -47,12 +47,11 @@ class Planet(subjunctive.world.World):
             self.spawn_random(Hazard, avoid=cursor_loc, edges=False)
 
 class Cursor(subjunctive.entity.Entity):
-    directional = True
-    image = subjunctive.image('images/cursor.png')
-    pushable = True
+    image = subjunctive.resource.image('images/cursor.png')
+    orientable = True
 
 class Hazard(subjunctive.entity.Entity):
-    image = subjunctive.image('images/hazard.png')
+    image = subjunctive.resource.image('images/hazard.png')
 
     def push(self, direction, pusher=None):
         if isinstance(pusher, Neutralize):
@@ -64,11 +63,11 @@ class Hazard(subjunctive.entity.Entity):
             raise DeathError
 
 class Neutralize(subjunctive.entity.Entity):
-    image = subjunctive.image('images/neutralize.png')
+    image = subjunctive.resource.image('images/neutralize.png')
     pushable = True
 
 class PushRedirector(subjunctive.entity.Entity):
-    image = subjunctive.image('images/cursor.png')
+    image = subjunctive.resource.image('images/cursor.png')
 
     def push(self, direction, pusher=None):
         if direction == 'right':
@@ -77,11 +76,11 @@ class PushRedirector(subjunctive.entity.Entity):
             subjunctive.actions.move(self.world, self, direction)
 
 class Receptor(subjunctive.entity.Entity):
-    images = [subjunctive.image('images/receptor0.png'),
-              subjunctive.image('images/receptor4.png'),
-              subjunctive.image('images/receptor3.png'),
-              subjunctive.image('images/receptor2.png'),
-              subjunctive.image('images/receptor1.png')]
+    images = [subjunctive.resource.image('images/receptor0.png'),
+              subjunctive.resource.image('images/receptor4.png'),
+              subjunctive.resource.image('images/receptor3.png'),
+              subjunctive.resource.image('images/receptor2.png'),
+              subjunctive.resource.image('images/receptor1.png')]
 
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
@@ -101,31 +100,18 @@ class Receptor(subjunctive.entity.Entity):
             self.world.remove(pusher)
 
 class Recycle(subjunctive.entity.Entity):
-    image = subjunctive.image('images/recycle.png')
+    image = subjunctive.resource.image('images/recycle.png')
     pushable = True
 
 if __name__ == '__main__':
-    sdl2.ext.init()
     world = Planet()
     cursor = Cursor(world, name="John Smith")
     world.setup(cursor)
-    world._draw()
 
-    def keydown_callback(direction):
-        if direction:
-            world.tick(cursor)
-            previous_combo = world.combo
-            cursor.move(direction)
-            if world.combo == previous_combo:
-                world.combo = 1
-
-    running = True
-    while running:
-        events = sdl2.ext.get_events()
-        for event in events:
-            if event.type == sdl2.SDL_QUIT:
-                running = False
-            elif event.type == sdl2.SDL_KEYDOWN:
-                keydown_callback(subjunctive.KEYBOARD_DIRECTIONS.get(event.key.keysym.sym))
-        world._draw()
-        sdl2.timer.SDL_Delay(10)
+    def move_cursor(direction):
+        world.tick(cursor)
+        previous_combo = world.combo
+        cursor.move(direction, orient=True)
+        if world.combo == previous_combo:
+            world.combo = 1
+    subjunctive.run(world, on_direction=move_cursor)

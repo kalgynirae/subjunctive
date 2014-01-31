@@ -1,28 +1,24 @@
-import os.path
-import sys
-
 import sdl2
 import sdl2.ext
 
+from . import grid
 from . import entity
+from . import resource
 from . import world
 
-KEYBOARD_DIRECTIONS = {sdl2.SDLK_LEFT: 'left',
-                       sdl2.SDLK_DOWN: 'down',
-                       sdl2.SDLK_UP: 'up',
-                       sdl2.SDLK_RIGHT: 'right'}
+def run(world, *, on_direction=None):
+    while True:
+        events = sdl2.ext.get_events()
+        for event in events:
+            if event.type == sdl2.SDL_QUIT:
+                return
+            elif event.type == sdl2.SDL_KEYDOWN:
+                sym = event.key.keysym.sym
+                if on_direction:
+                    direction = grid.KEYBOARD.get(sym)
+                    if direction:
+                        on_direction(direction)
+        world._draw()
+        sdl2.timer.SDL_Delay(20)
 
-_paths = [os.path.dirname(__file__)]
-
-def add_path(path):
-    _paths.append(path)
-
-def image(name):
-    for path in _paths:
-        try:
-            surface = sdl2.ext.load_image(os.path.join(path, name))
-        except sdl2.ext.common.SDLError:
-            pass
-        else:
-            return surface
-    raise KeyError("image %r could not be found" % name)
+sdl2.ext.init()

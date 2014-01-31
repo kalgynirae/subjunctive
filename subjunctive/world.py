@@ -5,70 +5,20 @@ import sys
 
 import sdl2.ext
 
-class OutOfBounds(Exception):
-    pass
-
-def _make_location_class(grid_size):
-    """Make a specialized Location class that validates its input
-
-    Instances of the returned class will raise an exception if they are
-    constructed with values that are out-of-bounds.
-
-    """
-    class Location:
-        __slots__ = ['__x', '__y']
-        max = grid_size
-
-        def __eq__(self, other):
-            return self.x == other.x and self.y == other.y
-
-        def __hash__(self):
-            return hash((self.x, self.y))
-
-        def __init__(self, x, y):
-            if not (isinstance(x, int) and isinstance(y, int)):
-                raise TypeError("Location object needs integers")
-            if not 0 <= x < self.max[0] or not 0 <= y < self.max[1]:
-                raise OutOfBounds
-            self.__x = x
-            self.__y = y
-
-        def __repr__(self):
-            return "Location({}, {})".format(self.x, self.y)
-
-        @property
-        def x(self):
-            return self.__x
-
-        @property
-        def y(self):
-            return self.__y
-
-        def adjacent(self, direction):
-            if direction == 'left':
-                return self.__class__(self.x - 1, self.y)
-            elif direction == 'down':
-                return self.__class__(self.x, self.y + 1)
-            elif direction == 'up':
-                return self.__class__(self.x, self.y - 1)
-            elif direction == 'right':
-                return self.__class__(self.x + 1, self.y)
-            else:
-                raise ValueError("Invalid direction: {}".format(direction))
-
-    return Location
+from .entity import Entity
+from .grid import Grid
 
 class World:
     background = None
+    grid = Grid(8, 8)
     grid_offset = (0, 0)
-    grid_size = (8, 8)
     score_offset = None
     tile_size = (16, 16)
     window_title = "Subjunctive!"
 
     @property
     def center(self):
-        return self.Location(self.grid_size[0] // 2, self.grid_size[1] // 2)
+        return self.grid.Location(self.grid.width // 2, self.grid.height // 2)
 
     def __init__(self):
         super().__init__()
@@ -77,17 +27,13 @@ class World:
             width = self.background.w
             height = self.background.h
         else:
-            width = self.grid_size[0] * self.tile_size[0]
-            height = self.grid_size[1] * self.tile_size[1]
-
-        # Create a grid-aware Location class
-        self.Location = _make_location_class(self.grid_size)
-        self.Location.__qualname__ = self.__class__.__qualname__ + ".Location"
+            width = self.grid.width * self.tile_size[0]
+            height = self.grid.height * self.tile_size[1]
 
         # Set up locations
-        self._entities = {self.Location(x, y): None
-                          for x in range(self.grid_size[0])
-                          for y in range(self.grid_size[1])}
+        self._entities = {self.grid.Location(x, y): None
+                          for x in range(self.grid.width)
+                          for y in range(self.grid.height)}
 
         self.score = 0
         if self.score_offset:
@@ -97,12 +43,11 @@ class World:
             #    "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
 
         self._window = sdl2.ext.Window(self.window_title, (width, height))
-        self._surface = self._window.get_surface()
 
     def clear(self):
-        self._entities = {self.Location(x, y): None
-                          for x in range(self.grid_size[0])
-                          for y in range(self.grid_size[1])}
+        self._entities = {self.grid.Location(x, y): None
+                          for x in range(self.grid.width)
+                          for y in range(self.grid.height)}
 
     def count(self, entity_type):
         """Return the number of entity_type entities currently in the world"""
@@ -146,7 +91,7 @@ class World:
 
         width, height = len(lines[0]), len(lines)
         world = cls()
-        world.grid_size = width, height
+        world.grid = Grid(width, height)
 
         for ny, line in enumerate(lines, start=1):
             y = height - ny
@@ -158,7 +103,7 @@ class World:
                                   "".format(char))
                 else:
                     if entity_type:
-                        world.place(entity_type(), world.Location(x, y))
+                        world.place(entity_type(), world.grid.Location(x, y))
 
         return world
 
@@ -219,7 +164,7 @@ class World:
             for lx, j in enumerate(columns[ly]):
                 try:
                     e = obj_list[j]()
-                    self.place(e, self.Location(lx,self.grid_size[1]-ly-1))
+                    self.place(e, self.grid.Location(lx, self.grid.height-ly-1))
                 except KeyError:
                     pass
 
@@ -237,9 +182,8 @@ class World:
             invalid_x.append(avoid.x)
             invalid_y.append(avoid.y)
         if not edges:
-            gx, gy = self.grid_size
-            invalid_x += [0, gx - 1]
-            invalid_y += [0, gy - 1]
+            invalid_x += [0, self.grid.width - 1]
+            invalid_y += [0, self.grid.height - 1]
         available_locations = [loc for loc, entity in self._entities.items()
                                if not entity and loc.x not in invalid_x
                                              and loc.y not in invalid_y]
