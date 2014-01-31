@@ -1,13 +1,15 @@
-import pyglet
+from sdl2 import sdlgfx
+
+from . import grid
+from . import resource
 
 class Entity:
-    directional = False
+    orientable = False
+    image = resource.image('images/default.png')
     pushable = False
 
-    def __init__(self, world, *, direction='right', name=None):
-        # Create the sprite first to avoid problems with overridden setters
-        # that try to access the sprite
-        self.sprite = pyglet.sprite.Sprite(self.image, batch=world.batch)
+    def __init__(self, world, *, direction=grid.up, name=None):
+        self._direction = grid.up
         self.direction = direction
         self.name = self.__class__.__name__ if name is None else name
         self.world = world
@@ -21,27 +23,41 @@ class Entity:
 
     @direction.setter
     def direction(self, direction):
+        if self.orientable:
+            # TODO: Rotate the image to face the right direction
+            rotations = direction - self._direction
+            if rotations:
+                #print("Rotating %d*90!" % rotations)
+                #self.image = sdlgfx.rotozoomSurface(self.image, 90 * rotations,
+                #                                    1, 0).contents
+                pass
         self._direction = direction
-        if self.directional:
-            _rotate(self.sprite, direction)
 
-    @property
-    def image(self):
-        return pyglet.resource.image('images/default.png')
+    def move(self, direction, *, orient=False):
+        if orient:
+            self.direction = direction
+        try:
+            new_location = self.world.locate(self).adjacent(direction)
+        except grid.OutOfBounds:
+            return
+        blocking_entity = self.world._entities.get(new_location)
+        if blocking_entity:
+            blocking_entity.push(direction, self)
+        if not self.world._entities[new_location]:
+            try:
+                self.world.remove(self)
+            except ValueError:
+                # This means someone else removed us, so give up
+                return
+            else:
+                self.world.place(self, new_location)
 
-    @image.setter
-    def image(self, image):
-        self.sprite.image = image
-
-    def respond_to_push(self, direction, pusher, world):
+    def push(self, direction, pusher=None):
         """Return what should happen when the entity is pushed
 
         Entities can override this method to get special behavior.
 
         Possible return values: "stay", "move", "vanish", "consume", "mad"
         """
-        return "move" if self.pushable else "stay"
-
-def _rotate(sprite, direction):
-    rotation = {'left': 180, 'down': 90, 'up': 270, 'right': 0}
-    sprite.rotation = rotation[direction]
+        if self.pushable:
+            self.move(direction, orient=self.orientable)

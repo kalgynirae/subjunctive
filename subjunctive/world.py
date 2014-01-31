@@ -1,126 +1,84 @@
+import itertools
 import logging
 import random
 import sys
 
-import pyglet
-import pyglet.gl as gl
+import sdl2.ext
 
-from . import actions
+from .entity import Entity
+from .grid import Grid
 
-class God:
-    __slots__ = []
-God = God()
-
-class OutOfBounds(Exception):
-    pass
-
-def _make_location_class(grid_size):
-    """Make a specialized Location class that validates its input
-
-    Instances of the returned class will raise an exception if they are
-    constructed with values that are out-of-bounds.
-
-    """
-    class Location:
-        __slots__ = ['__x', '__y']
-        max = grid_size
-
-        def __eq__(self, other):
-            return self.x == other.x and self.y == other.y
-
-        def __hash__(self):
-            return hash((self.x, self.y))
-
-        def __init__(self, x, y):
-            if not (isinstance(x, int) and isinstance(y, int)):
-                raise TypeError("Location object needs integers")
-            if not 0 <= x < self.max[0] or not 0 <= y < self.max[1]:
-                raise OutOfBounds
-            self.__x = x
-            self.__y = y
-
-        def __repr__(self):
-            return "Location({}, {})".format(self.x, self.y)
-
-        @property
-        def x(self):
-            return self.__x
-
-        @property
-        def y(self):
-            return self.__y
-
-        def adjacent(self, direction):
-            if direction == 'left':
-                return self.__class__(self.x - 1, self.y)
-            elif direction == 'down':
-                return self.__class__(self.x, self.y - 1)
-            elif direction == 'up':
-                return self.__class__(self.x, self.y + 1)
-            elif direction == 'right':
-                return self.__class__(self.x + 1, self.y)
-            else:
-                raise ValueError("Invalid direction: {}".format(direction))
-
-    return Location
-
-class World(pyglet.window.Window):
+class World:
     background = None
+    grid = Grid(8, 8)
     grid_offset = (0, 0)
-    grid_size = (8, 8)
     score_offset = None
     tile_size = (16, 16)
-    window_caption = "Subjunctive!"
+    window_title = "Subjunctive!"
 
     @property
     def center(self):
-        return self.Location(self.grid_size[0] // 2, self.grid_size[1] // 2)
+        return self.grid.Location(self.grid.width // 2, self.grid.height // 2)
 
     def __init__(self):
+        super().__init__()
+
         if self.background is not None:
-            width = self.background.width
-            height = self.background.height
+            width = self.background.w
+            height = self.background.h
         else:
-            width = self.grid_size[0] * self.tile_size[0]
-            height = self.grid_size[1] * self.tile_size[1]
-        super().__init__(width=width, height=height,
-                         caption=self.window_caption)
-
-        # Set up event handlers (TODO: make this less weird)
-        self.on_draw = self._draw
-
-        # Enable rendering with transparency
-        gl.glEnable(gl.GL_BLEND)
-        gl.glBlendFunc(gl.GL_SRC_ALPHA, gl.GL_ONE_MINUS_SRC_ALPHA)
-
-        # Create a grid-aware Location class
-        self.Location = _make_location_class(self.grid_size)
-        self.Location.__qualname__ = self.__class__.__qualname__ + ".Location"
-
-        # Create a batch to draw the sprites
-        self.batch = pyglet.graphics.Batch()
+            width = self.grid.width * self.tile_size[0]
+            height = self.grid.height * self.tile_size[1]
 
         # Set up locations
-        self._entities = {self.Location(x, y): None
-                          for x in range(self.grid_size[0])
-                          for y in range(self.grid_size[1])}
+        self._entities = {self.grid.Location(x, y): None
+                          for x in range(self.grid.width)
+                          for y in range(self.grid.height)}
 
         self.score = 0
         if self.score_offset:
             # Create a score label
             x, y = self.score_offset
-            self.score_label = pyglet.text.Label(
-                "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
+            #self.score_label = pyglet.text.Label(
+            #    "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
+
+        self._window = sdl2.ext.Window(self.window_title, (width, height))
 
     def clear(self):
-        self._entities = {self.Location(x, y): None
-                          for x in range(self.grid_size[0])
-                          for y in range(self.grid_size[1])}
+        self._entities = {self.grid.Location(x, y): None
+                          for x in range(self.grid.width)
+                          for y in range(self.grid.height)}
 
     def count(self, entity_type):
         """Return the number of entity_type entities currently in the world"""
         return sum(1 for e in self._entities.values()
                    if isinstance(e, entity_type))
+
+    def _draw(self):
+        surface = self._window.get_surface()
+        if self.background:
+            sdl2.SDL_BlitSurface(self.background, None, surface, None)
+        # Update the position of each sprite
+        for location, entity in self._entities.items():
+            if entity:
+                w, h = entity.image.w, entity.image.h
+                x, y = self._pixels(location)
+                #if s.rotation == 90:
+                #    y += s.surface.h
+                #elif s.rotation == 180:
+                #    x += s.surface.w
+                #    y += s.surface.h
+                #elif s.rotation == 270:
+                #    x += s.surface.w
+                #s.position = (x, y)
+                sdl2.SDL_BlitSurface(entity.image, None, surface,
+                                     sdl2.SDL_Rect(x, y))
+
+        # Draw the score
+        #if self.score_offset:
+        #    self.score_label.text = str(self.score)
+        #    self.score_label.draw()
+        self._window.refresh()
 
     @classmethod
     def load(cls, level_file, definitions_file):
@@ -133,7 +91,7 @@ class World(pyglet.window.Window):
 
         width, height = len(lines[0]), len(lines)
         world = cls()
-        world.grid_size = width, height
+        world.grid = Grid(width, height)
 
         for ny, line in enumerate(lines, start=1):
             y = height - ny
@@ -145,7 +103,7 @@ class World(pyglet.window.Window):
                                   "".format(char))
                 else:
                     if entity_type:
-                        world.place(entity_type(), world.Location(x, y))
+                        world.place(entity_type(), world.grid.Location(x, y))
 
         return world
 
@@ -158,29 +116,6 @@ class World(pyglet.window.Window):
             if suspect is entity:
                 return location
         raise ValueError("{} not in world".format(entity))
-
-    def _draw(self):
-        # Update the position of each sprite
-        for location, entity in self._entities.items():
-            if entity:
-                s = entity.sprite
-                x, y = self._pixels(location)
-                if s.rotation == 90:
-                    y += s.image.height
-                elif s.rotation == 180:
-                    x += s.image.width
-                    y += s.image.height
-                elif s.rotation == 270:
-                    x += s.image.width
-                s.set_position(x, y)
-        if self.background:
-            self.background.blit(0, 0)
-        self.batch.draw()
-
-        # Draw the score
-        if self.score_offset:
-            self.score_label.text = str(self.score)
-            self.score_label.draw()
 
     def _pixels(self, location):
         return (location.x * self.tile_size[0] + self.grid_offset[0],
@@ -196,53 +131,6 @@ class World(pyglet.window.Window):
             raise ValueError("Location {} already contains {}"
                              "".format(location, self._entities[location]))
         self._entities[location] = entity
-
-    def push(self, entity, direction, pusher=God):
-        """Push entity in the given direction"""
-        if pusher is God:
-            entity.direction = direction
-
-        action = entity.respond_to_push(direction, pusher, self)
-        if isinstance(action, actions.MoveAction):
-            try:
-                new_location = self.locate(entity).adjacent(direction)
-            except OutOfBounds:
-                return actions.StayAction()
-
-            if self._entities[new_location]:
-                neighbor_action = self.push(self._entities[new_location],
-                                            direction, entity)
-                if isinstance(neighbor_action, actions.MoveAction):
-                    logging.debug("{} is moving (neighbor)".format(entity))
-                    self.remove(entity)
-                    self.place(entity, new_location)
-                    return actions.MoveAction()
-                elif isinstance(neighbor_action, actions.ConsumeAction):
-                    logging.debug("{} is being consumed".format(entity))
-                    self.remove(entity)
-                    return actions.MoveAction()
-                elif isinstance(neighbor_action, actions.StayAction):
-                    logging.debug("{} is staying".format(entity))
-                    return actions.StayAction()
-                else:
-                    logging.debug("{} is doing {} (neighbor)".format(entity, action))
-                    return neighbor_action
-            else:
-                logging.debug("{} is moving (no neighbor)".format(entity))
-                self.remove(entity)
-                self.place(entity, new_location)
-                return actions.MoveAction()
-        elif isinstance(action, actions.VanishAction):
-            logging.debug("{} is vanishing".format(entity))
-            self.remove(entity)
-            return actions.VanishAction()
-        elif isinstance(action, actions.VanishAction):
-            logging.debug("{} is madding".format(entity))
-            self.remove(entity)
-            return actions.VanishAction()
-        else:
-            logging.debug("{} is doing {}".format(entity, action))
-            return action
 
     def _read_level(self, path):
         """Part of incomplete level-file-loading code"""
@@ -276,7 +164,7 @@ class World(pyglet.window.Window):
             for lx, j in enumerate(columns[ly]):
                 try:
                     e = obj_list[j]()
-                    self.place(e, self.Location(lx,self.grid_size[1]-ly-1))
+                    self.place(e, self.grid.Location(lx, self.grid.height-ly-1))
                 except KeyError:
                     pass
 
@@ -294,9 +182,8 @@ class World(pyglet.window.Window):
             invalid_x.append(avoid.x)
             invalid_y.append(avoid.y)
         if not edges:
-            gx, gy = self.grid_size
-            invalid_x += [0, gx - 1]
-            invalid_y += [0, gy - 1]
+            invalid_x += [0, self.grid.width - 1]
+            invalid_y += [0, self.grid.height - 1]
         available_locations = [loc for loc, entity in self._entities.items()
                                if not entity and loc.x not in invalid_x
                                              and loc.y not in invalid_y]
@@ -315,6 +202,3 @@ if '--debug' in sys.argv:
     logging.basicConfig(level=logging.DEBUG)
 else:
     logging.basicConfig(level=logging.INFO)
-
-pyglet.resource.path.append('@subjunctive')
-pyglet.resource.reindex()
