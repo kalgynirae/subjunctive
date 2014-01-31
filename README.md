@@ -1,13 +1,40 @@
 **Subjunctive** – a *tile-based puzzle game* engine for Python 3
 
-Note: Subjunctive's API is **not stable**. We are still in the early
-development stages and things are likely to change a lot!
+Note: Subjunctive's API is **not at all stable**. We are still in the
+early development stages and things are likely to change a lot!
 
 * * *
 
 ## Using it
 
-Don't use it. The time has not yet arrived.
+### Installation
+
+Install these dependencies:
+
+*   [Python 3.3+] and [virtualenv]
+*   [sdl2], [sdl2_gfx], [sdl2_image], [sdl2_mixer]
+
+> Hint: If you're not already using Linux, now would be a good time to
+> consider doing so. Installing all this stuff would be as simple as
+>
+>     $ pacman -S python3 python3-virtualenv sdl2 sdl2_gfx sdl2_image sdl2_mixer
+
+Clone our repository, create a virtualenv, and install dependencies:
+
+    $ git clone https://github.com/ufgmg/subjunctive
+    $ cd subjunctive
+    $ virtualenv .env
+    $ .env/bin/pip install -e .
+
+Now you can run the games with:
+
+    $ .env/bin/<game>
+
+### Adding a new game
+
+Add your game's script to the `scripts` list in `setup.py`. Then, re-run
+
+    $ .env/bin/pip install -e .
 
 ## Goals / design principles
 
@@ -185,6 +212,12 @@ you need to set up first.
 
 11. Send a **pull request**.
 
+[Python 3.3]: http://www.python.org/download/
+[virtualenv]: http://www.virtualenv.org/en/latest/index.html
+[sdl2]: http://www.libsdl.org/download-2.0.php
+[sdl2_gfx]: http://www.ferzkopp.net/joomla/content/view/19/14/
+[sdl2_image]: http://www.libsdl.org/projects/SDL_image/
+[sdl2_mixer]: http://www.libsdl.org/projects/SDL_mixer/
 [the Zen of Python]: http://www.python.org/dev/peps/pep-0020/
 [PEP 8]: http://www.python.org/dev/peps/pep-0008/
 [A Note About Git Commit Messages]: http://tbaggery.com/2008/04/19/a-note-about-git-commit-messages.html
