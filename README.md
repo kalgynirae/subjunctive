@@ -5,9 +5,7 @@ early development stages and things are likely to change a lot!
 
 * * *
 
-## Using it
-
-### Installation
+## Installation / usage
 
 Install these dependencies:
 
@@ -26,9 +24,16 @@ Clone our repository, create a virtualenv, and install dependencies:
     $ virtualenv .env
     $ .env/bin/pip install -e .
 
-Now you can run the games with:
+### Running the games
 
-    $ .env/bin/<game>
+After installing as described in the previous section, you can run the
+games like so:
+
+    $ .env/bin/<game>.py
+
+For example,
+
+    $ .env/bin/think-green.py
 
 ### Adding a new game
 
@@ -212,7 +217,7 @@ you need to set up first.
 
 11. Send a **pull request**.
 
-[Python 3.3]: http://www.python.org/download/
+[Python 3.3+]: http://www.python.org/download/
 [virtualenv]: http://www.virtualenv.org/en/latest/index.html
 [sdl2]: http://www.libsdl.org/download-2.0.php
 [sdl2_gfx]: http://www.ferzkopp.net/joomla/content/view/19/14/
