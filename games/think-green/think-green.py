@@ -66,15 +66,6 @@ class Neutralize(subjunctive.entity.Entity):
     image = subjunctive.resource.image('images/neutralize.png')
     pushable = True
 
-class PushRedirector(subjunctive.entity.Entity):
-    image = subjunctive.resource.image('images/cursor.png')
-
-    def push(self, direction, pusher=None):
-        if direction == 'right':
-            subjunctive.actions.push(self.world, 'up')
-        else:
-            subjunctive.actions.move(self.world, self, direction)
-
 class Receptor(subjunctive.entity.Entity):
     images = [subjunctive.resource.image('images/receptor0.png'),
               subjunctive.resource.image('images/receptor4.png'),
