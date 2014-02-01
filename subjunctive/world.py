@@ -43,6 +43,7 @@ class World:
             #    "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
 
         self._window = sdl2.ext.Window(self.window_title, (width, height))
+        self._window.show()
 
     def clear(self):
         self._entities = {self.grid.Location(x, y): None

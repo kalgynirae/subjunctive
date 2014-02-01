@@ -29,7 +29,6 @@ class Planet(subjunctive.world.World):
         self.spawn_random(Recycle, number=25, avoid=self.center, edges=False)
         self.spawn_random(Receptor, number=7, avoid=self.center, edges=False)
         self.spawn_random(Hazard, number=7, avoid=self.center, edges=False)
-        self._window.show()
 
     def tick(self, cursor):
         self.score -= 1
