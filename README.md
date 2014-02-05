@@ -27,7 +27,9 @@ about it. It is missing:
 *   title screen / instructions
 *   music
 
-## Dependencies
+## Set-up
+
+### Dependencies
 
 **Subjunctive** requires:
 
@@ -112,7 +114,7 @@ And, as usual, [the Zen of Python] provides excellent guidance.
 
 Refer to [A Note About Git Commit Messages].
 
-### Set-up
+### Set-up for contributing
 
 So, you want to help out? It's pretty easy, but there are a few things
 you need to set up first.
