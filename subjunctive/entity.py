@@ -1,5 +1,3 @@
-from sdl2 import sdlgfx
-
 from . import grid
 from . import resource
 
@@ -9,29 +7,12 @@ class Entity:
     pushable = False
 
     def __init__(self, world, *, direction=grid.up, name=None):
-        self._direction = grid.up
         self.direction = direction
         self.name = self.__class__.__name__ if name is None else name
         self.world = world
 
     def __str__(self):
         return self.name
-
-    @property
-    def direction(self):
-        return self._direction
-
-    @direction.setter
-    def direction(self, direction):
-        if self.orientable:
-            # TODO: Rotate the image to face the right direction
-            rotations = direction - self._direction
-            if rotations:
-                #print("Rotating %d*90!" % rotations)
-                #self.image = sdlgfx.rotozoomSurface(self.image, 90 * rotations,
-                #                                    1, 0).contents
-                pass
-        self._direction = direction
 
     def move(self, direction, *, orient=False):
         if orient:

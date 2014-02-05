@@ -27,19 +27,21 @@ about it. It is missing:
 *   title screen / instructions
 *   music
 
-## Installation / usage
+## Dependencies
 
-Install these dependencies:
+**Subjunctive** requires:
 
-*   [Python 3.3+] and [virtualenv]
-*   [sdl2], [sdl2_gfx], [sdl2_image], [sdl2_mixer]
+*   [Git]
+*   [Python 3.3+] and (optional, but recommended) [virtualenv]
+*   [sdl2], [sdl2_image], [sdl2_mixer]
 
 > **Hint:** If you're not already using Linux, now would be a good time
 > to consider doing so. Installing all this stuff would be as simple as
 >
->     $ pacman -S python3 python3-virtualenv sdl2 sdl2_gfx sdl2_image sdl2_mixer
+>     $ pacman -S git python3 python3-virtualenv sdl2 sdl2_gfx sdl2_image sdl2_mixer
 
-Clone our repository, create a virtualenv, and install dependencies:
+To get all everything set up, clone our repository, create a virtualenv,
+and install dependencies:
 
     $ git clone https://github.com/ufgmg/subjunctive
     $ cd subjunctive
@@ -117,7 +119,7 @@ you need to set up first.
 
 1.  **Python**
 
-    You need Python 3.2 or newer. You should be able to open a terminal
+    You need Python 3.3 or newer. You should be able to open a terminal
     and run the Python interpreter by typing `python` or `python3`.
 
     If you already know some programming, the official [Python Tutorial]
@@ -239,10 +241,10 @@ you need to set up first.
 
 11. Send a **pull request**.
 
+[Git]: http://git-scm.com/
 [Python 3.3+]: http://www.python.org/download/
 [virtualenv]: http://www.virtualenv.org/en/latest/index.html
 [sdl2]: http://www.libsdl.org/download-2.0.php
-[sdl2_gfx]: http://www.ferzkopp.net/joomla/content/view/19/14/
 [sdl2_image]: http://www.libsdl.org/projects/SDL_image/
 [sdl2_mixer]: http://www.libsdl.org/projects/SDL_mixer/
 [the Zen of Python]: http://www.python.org/dev/peps/pep-0020/
