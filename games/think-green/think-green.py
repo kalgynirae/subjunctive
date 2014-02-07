@@ -46,8 +46,11 @@ class Planet(subjunctive.world.World):
             self.spawn_random(Hazard, avoid=cursor_loc, edges=False)
 
 class Cursor(subjunctive.entity.Entity):
-    image = subjunctive.resource.image('images/cursor.png')
-    orientable = True
+    image = subjunctive.entity.directional(
+                up=subjunctive.resource.image('images/cursor-up.png'),
+                down=subjunctive.resource.image('images/cursor-down.png'),
+                left=subjunctive.resource.image('images/cursor-left.png'),
+                right=subjunctive.resource.image('images/cursor-right.png'))
 
 class Hazard(subjunctive.entity.Entity):
     image = subjunctive.resource.image('images/hazard.png')
