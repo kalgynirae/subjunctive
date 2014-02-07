@@ -1,13 +1,26 @@
+import logging
 import os.path
 
 import sdl2.ext
 
 _paths = [os.path.dirname(__file__)]
+default_image = sdl2.ext.load_image(os.path.join(_paths[0],
+                                    'images/default.png'))
 
 def add_path(path):
     _paths.append(path)
 
 def image(name):
+    """Return an sdl surface containing the image with the given name
+
+    Subjunctive keeps a list of resource paths that are searched; your
+    application should add its path to this list by doing:
+
+        subjunctive.resource.add_path(os.path.dirname(__file__))
+
+    If the specified name cannot be found, the default image will be
+    returned.
+    """
     for path in _paths:
         try:
             surface = sdl2.ext.load_image(os.path.join(path, name))
@@ -15,4 +28,5 @@ def image(name):
             pass
         else:
             return surface
-    raise KeyError("image %r could not be found" % name)
+    logging.warning("image %r could not be found; using default" % name)
+    return default_image

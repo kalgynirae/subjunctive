@@ -2,7 +2,6 @@ from . import grid
 from . import resource
 
 class Entity:
-    orientable = False
     image = resource.image('images/default.png')
     pushable = False
 
@@ -39,4 +38,11 @@ class Entity:
         Entities can override this method to get special behavior.
         """
         if self.pushable:
-            self.move(direction, orient=self.orientable)
+            self.move(direction)
+
+def directional(**images):
+    """Return a property that returns the correct directional image"""
+    @property
+    def image(self):
+        return images[self.direction.name]
+    return image
