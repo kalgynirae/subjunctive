@@ -82,11 +82,8 @@ class World:
         self._window.refresh()
 
     @classmethod
-    def load(cls, level_file, definitions_file):
-        """Part of incomplete level-file-loading code"""
-        # TODO: Load definitions from the file
-        types = {'-': None, 'a': Entity}
-
+    def load(cls, level_file, definitions):
+        """Return a World with a grid populated as described by level_file"""
         with open(level_file) as f:
             lines = [line for line in map(str.strip, f) if line != '']
 
