@@ -39,5 +39,4 @@ def textfile(name):
             pass
         else:
             return text
-    raise KeyError("Text file %r could not be found" % name)
->>>>>>> Wrote level loading for floor paint
+    logging.warning("Textfile %r could not be found; crashing program" % name)

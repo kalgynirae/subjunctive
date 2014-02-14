@@ -20,5 +20,5 @@ if __name__ == '__main__':
     world, player = World.load('levels/01.txt', definitions, Player)
 
     def move_player(direction):
-        player.move(direction, orient=True)
+        player.move(direction, orient=False)
     subjunctive.run(world, on_direction=move_player)
