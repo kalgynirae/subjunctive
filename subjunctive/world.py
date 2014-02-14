@@ -7,6 +7,7 @@ import sdl2.ext
 
 from .entity import Entity
 from .grid import Grid
+from .resource import textfile
 
 class World:
     background = None
@@ -20,9 +21,9 @@ class World:
     def center(self):
         return self.grid.Location(self.grid.width // 2, self.grid.height // 2)
 
-    def __init__(self):
+    def __init__(self, grid_x, grid_y):
         super().__init__()
-
+        self.grid = Grid(grid_x, grid_y)
         if self.background is not None:
             width = self.background.w
             height = self.background.h
@@ -64,14 +65,6 @@ class World:
             if entity:
                 w, h = entity.image.w, entity.image.h
                 x, y = self._pixels(location)
-                #if s.rotation == 90:
-                #    y += s.surface.h
-                #elif s.rotation == 180:
-                #    x += s.surface.w
-                #    y += s.surface.h
-                #elif s.rotation == 270:
-                #    x += s.surface.w
-                #s.position = (x, y)
                 sdl2.SDL_BlitSurface(entity.image, None, surface,
                                      sdl2.SDL_Rect(x, y))
 
@@ -82,28 +75,32 @@ class World:
         self._window.refresh()
 
     @classmethod
-    def load(cls, level_file, definitions):
+    def load(cls, level_file, definitions, player):
         """Return a World with a grid populated as described by level_file"""
-        with open(level_file) as f:
+
+        with textfile('levels/01.txt') as f:
             lines = [line for line in map(str.strip, f) if line != '']
 
         width, height = len(lines[0]), len(lines)
-        world = cls()
-        world.grid = Grid(width, height)
+        world = cls(width, height)
 
-        for ny, line in enumerate(lines, start=1):
-            y = height - ny
+        for ny, line in enumerate(lines, start=0):
+            y = ny
             for x, char in enumerate(line):
                 try:
-                    entity_type = types[char]
+                    entity_type = definitions[char]
                 except KeyError:
                     logging.error("Character {!r} is not defined; ignoring"
                                   "".format(char))
                 else:
                     if entity_type:
-                        world.place(entity_type(), world.grid.Location(x, y))
+                        if entity_type == player:
+                            _player = entity_type(world)
+                            world.place(_player, world.grid.Location(x, y))
+                        else:
+                            world.place(entity_type(world), world.grid.Location(x, y))
 
-        return world
+        return world, _player
 
     def locate(self, entity):
         """Return entity's location in the world

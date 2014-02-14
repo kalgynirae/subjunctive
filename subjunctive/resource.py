@@ -30,3 +30,14 @@ def image(name):
             return surface
     logging.warning("image %r could not be found; using default" % name)
     return default_image
+
+def textfile(name):
+    for path in _paths:
+        try:
+            text = open(os.path.join(path, name))
+        except (IOError, OSError):
+            pass
+        else:
+            return text
+    raise KeyError("Text file %r could not be found" % name)
+>>>>>>> Wrote level loading for floor paint
