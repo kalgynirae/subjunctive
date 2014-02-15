@@ -31,12 +31,17 @@ def image(name):
     logging.warning("image %r could not be found; using default" % name)
     return default_image
 
-def textfile(name):
+def file(name):
     for path in _paths:
         try:
             text = open(os.path.join(path, name))
-        except (IOError, OSError):
+        except FileNotFoundError:
+            pass
+        except PermissionError:
+            logging.warning("Trying to access directory " + path + 
+                            " with insufficient permission. " +
+                            "Continuing search")
             pass
         else:
             return text
-    logging.warning("Textfile %r could not be found; crashing program" % name)
+    raise FileNotFoundError

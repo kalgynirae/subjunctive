@@ -7,7 +7,7 @@ import sdl2.ext
 
 from .entity import Entity
 from .grid import Grid
-from .resource import textfile
+from .resource import file
 
 class World:
     background = None
@@ -21,9 +21,10 @@ class World:
     def center(self):
         return self.grid.Location(self.grid.width // 2, self.grid.height // 2)
 
-    def __init__(self, grid_x, grid_y):
+    def __init__(self, grid=None):
         super().__init__()
-        self.grid = Grid(grid_x, grid_y)
+        if grid is not None:
+            self.grid = grid
         if self.background is not None:
             width = self.background.w
             height = self.background.h
@@ -78,14 +79,14 @@ class World:
     def load(cls, level_file, definitions, player):
         """Return a World with a grid populated as described by level_file"""
 
-        with textfile('levels/01.txt') as f:
+        with file(level_file) as f:
             lines = [line for line in map(str.strip, f) if line != '']
 
         width, height = len(lines[0]), len(lines)
-        world = cls(width, height)
+        grid = Grid(width, height)
+        world = cls(grid)
 
-        for ny, line in enumerate(lines, start=0):
-            y = ny
+        for y, line in enumerate(lines, start=0):
             for x, char in enumerate(line):
                 try:
                     entity_type = definitions[char]
