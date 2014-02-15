@@ -30,3 +30,18 @@ def image(name):
             return surface
     logging.warning("image %r could not be found; using default" % name)
     return default_image
+
+def file(name):
+    for path in _paths:
+        try:
+            text = open(os.path.join(path, name))
+        except FileNotFoundError:
+            pass
+        except PermissionError:
+            logging.warning("Trying to access directory " + path + 
+                            " with insufficient permission. " +
+                            "Continuing search")
+            pass
+        else:
+            return text
+    raise FileNotFoundError

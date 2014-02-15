@@ -16,7 +16,7 @@ class Planet(subjunctive.world.World):
     grid_offset = (231, 215)
     score_offset = (600, 40)
     tile_size = (13, 13)
-    window_caption = "Think Green"
+    window_title = "Think Green"
 
     def __init__(self):
         super().__init__()
