@@ -45,29 +45,50 @@ about it. It is missing:
 To get all everything set up, clone our repository, create a virtualenv,
 and install dependencies:
 
-Set the path to your virtualenv in environment variables
-
     $ git clone https://github.com/ufgmg/subjunctive
     $ cd subjunctive
-    $ virtualenv.py .env
-    $ .env/Scripts/pip.exe install --allow-unverified pysdl2 -e .
+    $ virtualenv env
+    $ env/bin/pip install -e .
+
+> **Notes for Windows users:** You'll have to modify the commands
+> slightly to work for Windows. For example, the Windows version of
+> `virtualenv` names the `bin` directory `Scripts` instead. You'll also
+> have to type the `.py` extension when you run `virtualenv.py`. If you
+> have trouble, make sure that the directory containing `virtualenv.py`
+> is in your PATH environment variable.
+>
+>     $ git clone https://github.com/ufgmg/subjunctive
+>     $ cd subjunctive
+>     $ virtualenv.py env
+>     $ env/Scripts/pip.exe install --allow-unverified pysdl2 -e .
+>
+> We recommend running these commands via Git Bash (which should have
+> been installed along with Git) instead of the Windows command prompt.
 
 ### Running the games
 
 After installing as described in the previous section, you can run the
 games like so:
 
-    $ .env/Scripts/python.exe .env/Scripts/<game>.py
+    $ env/bin/<game>.py
 
 For example,
 
-    $ .env/Scripts/python.exe .env/Scripts/think-green.py
+    $ env/bin/think-green.py
+
+> **Windows:**
+>
+>     $ env/Scripts/python.exe env/Scripts/think-green.py
 
 ### Adding a new game
 
 Add your game's script to the `scripts` list in `setup.py`. Then, re-run
 
-    $ .env/Scripts/pip.exe install --allow-unverified pysdl2 -e .
+    $ env/bin/pip install -e .
+
+> **Windows:**
+>
+>     $ env/Scripts/pip.exe install --allow-unverified pysdl2 -e .
 
 ## Goals / design principles
 
