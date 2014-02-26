@@ -25,12 +25,6 @@ class World:
         super().__init__()
         if grid is not None:
             self.grid = grid
-        if self.background is not None:
-            width = self.background.w
-            height = self.background.h
-        else:
-            width = self.grid.width * self.tile_size[0]
-            height = self.grid.height * self.tile_size[1]
 
         # Set up locations
         self._entities = {self.grid.Location(x, y): None
@@ -44,9 +38,6 @@ class World:
             #self.score_label = pyglet.text.Label(
             #    "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
 
-        self._window = sdl2.ext.Window(self.window_title, (width, height))
-        self._window.show()
-
     def clear(self):
         self._entities = {self.grid.Location(x, y): None
                           for x in range(self.grid.width)
@@ -57,8 +48,8 @@ class World:
         return sum(1 for e in self._entities.values()
                    if isinstance(e, entity_type))
 
-    def _draw(self):
-        surface = self._window.get_surface()
+    def _draw(self, window):
+        surface = window.get_surface()
         if self.background:
             sdl2.SDL_BlitSurface(self.background, None, surface, None)
         # Update the position of each sprite
@@ -73,7 +64,7 @@ class World:
         #if self.score_offset:
         #    self.score_label.text = str(self.score)
         #    self.score_label.draw()
-        self._window.refresh()
+        window.refresh()
 
     @classmethod
     def load(cls, level_file, definitions, player):

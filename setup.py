@@ -4,7 +4,7 @@ setup(
     name='subjunctive',
     version='0.1',
     install_requires=[
-        'pysdl2 >=0.8.0',
+        'PySDL2 ==0.8.0',
     ],
     packages=find_packages(),
     scripts=[
