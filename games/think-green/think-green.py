@@ -12,6 +12,7 @@ class DeathError(Exception):
 
 class Planet(subjunctive.world.World):
     background = subjunctive.resource.image('images/green_planet.png')
+    dead_background = subjunctive.resource.image('images/red_planet.png')
     grid = subjunctive.grid.Grid(22, 22)
     grid_offset = (231, 215)
     score_offset = (600, 40)
@@ -23,6 +24,9 @@ class Planet(subjunctive.world.World):
         self.combo = 1
         self.score = 100
         self.tick_count = 0
+
+    def die(self):
+        self.background = self.dead_background
 
     def setup(self, cursor):
         self.place(cursor, self.center)
@@ -45,12 +49,18 @@ class Planet(subjunctive.world.World):
                 self.count(Hazard) < 1):
             self.spawn_random(Hazard, avoid=cursor_loc, edges=False)
 
+class TitleScreen(subjunctive.world.World):
+    background = subjunctive.resource.image('images/title.png')
+
 class Cursor(subjunctive.entity.Entity):
     image = subjunctive.entity.directional(
                 up=subjunctive.resource.image('images/cursor-up.png'),
                 down=subjunctive.resource.image('images/cursor-down.png'),
                 left=subjunctive.resource.image('images/cursor-left.png'),
                 right=subjunctive.resource.image('images/cursor-right.png'))
+
+class Death(subjunctive.entity.Entity):
+    image = subjunctive.resource.image('images/death.png')
 
 class Hazard(subjunctive.entity.Entity):
     image = subjunctive.resource.image('images/hazard.png')
@@ -62,6 +72,7 @@ class Hazard(subjunctive.entity.Entity):
             self.world.remove(pusher)
             self.world.remove(self)
         else:
+            self.world.replace(self, Death(self.world))
             raise DeathError
 
 class Neutralize(subjunctive.entity.Entity):
@@ -97,14 +108,22 @@ class Recycle(subjunctive.entity.Entity):
     pushable = True
 
 if __name__ == '__main__':
-    world = Planet()
-    cursor = Cursor(world, name="John Smith")
-    world.setup(cursor)
+    subjunctive.run(TitleScreen(), on_select=subjunctive.exit)
 
-    def move_cursor(direction):
-        world.tick(cursor)
-        previous_combo = world.combo
-        cursor.move(direction, orient=True)
-        if world.combo == previous_combo:
-            world.combo = 1
-    subjunctive.run(world, on_direction=move_cursor)
+    while True:
+        world = Planet()
+        cursor = Cursor(world, name="John Smith")
+        world.setup(cursor)
+
+        def move_cursor(direction):
+            world.tick(cursor)
+            previous_combo = world.combo
+            cursor.move(direction, orient=True)
+            if world.combo == previous_combo:
+                world.combo = 1
+
+        try:
+            subjunctive.run(world, on_direction=move_cursor)
+        except DeathError:
+            world.die()
+            subjunctive.run(world, on_select=subjunctive.exit)
