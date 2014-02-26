@@ -17,19 +17,13 @@ class World:
     tile_size = (16, 16)
     window_title = "Subjunctive!"
 
-    @property
-    def center(self):
-        return self.grid.Location(self.grid.width // 2, self.grid.height // 2)
-
     def __init__(self, grid=None):
         super().__init__()
         if grid is not None:
             self.grid = grid
 
         # Set up locations
-        self._entities = {self.grid.Location(x, y): None
-                          for x in range(self.grid.width)
-                          for y in range(self.grid.height)}
+        self._entities = {loc: None for loc in self.grid}
 
         self.score = 0
         if self.score_offset:
