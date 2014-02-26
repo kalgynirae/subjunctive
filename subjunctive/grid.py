@@ -19,6 +19,31 @@ class Grid:
         self.height = height
         self.Location = _make_location_class(self, (width, height))
 
+    def __iter__(self):
+        for x in range(self.width):
+            for y in range(self.height):
+                yield self.Location(x, y)
+
+    @property
+    def bottom_left(self):
+        return self.Location(self.height - 1, 0)
+
+    @property
+    def bottom_right(self):
+        return self.Location(self.height - 1, self.width - 1)
+
+    @property
+    def center(self):
+        return self.Location(self.width // 2, self.height // 2)
+
+    @property
+    def top_left(self):
+        return self.Location(0, 0)
+
+    @property
+    def top_right(self):
+        return self.Location(0, self.width - 1)
+
 class OutOfBounds(Exception):
     pass
 

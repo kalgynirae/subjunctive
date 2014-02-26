@@ -29,10 +29,13 @@ class Planet(subjunctive.world.World):
         self.background = self.dead_background
 
     def setup(self, cursor):
-        self.place(cursor, self.center)
-        self.spawn_random(Recycle, number=25, avoid=self.center, edges=False)
-        self.spawn_random(Receptor, number=7, avoid=self.center, edges=False)
-        self.spawn_random(Hazard, number=7, avoid=self.center, edges=False)
+        self.place(cursor, self.grid.center)
+        self.spawn_random(Recycle, number=25, avoid=self.grid.center,
+                          edges=False)
+        self.spawn_random(Receptor, number=7, avoid=self.grid.center,
+                          edges=False)
+        self.spawn_random(Hazard, number=7, avoid=self.grid.center,
+                          edges=False)
 
     def tick(self, cursor):
         self.score -= 1
