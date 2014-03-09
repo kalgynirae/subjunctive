@@ -76,6 +76,7 @@ class Hazard(subjunctive.entity.Entity):
             self.world.remove(self)
         else:
             self.world.replace(self, Death(self.world))
+            self.world.remove(pusher)
             raise DeathError
 
 class Neutralize(subjunctive.entity.Entity):
