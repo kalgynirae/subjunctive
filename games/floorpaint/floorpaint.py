@@ -5,7 +5,7 @@ import subjunctive
 subjunctive.resource.add_path(os.path.dirname(__file__))
 
 class Player(subjunctive.entity.Entity):
-    image = subjunctive.resource.image('images/cursor.png')
+    image = subjunctive.resource.image('images/tile-active.png')
 
 class Wall(subjunctive.entity.Entity):
     pass
