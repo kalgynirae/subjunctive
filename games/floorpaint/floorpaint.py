@@ -8,13 +8,27 @@ from subjunctive.grid import Grid, left, right, up, down
 subjunctive.resource.add_path(os.path.dirname(__file__))
 
 class Player(subjunctive.entity.Entity):
-    image = subjunctive.resource.image('images/tile-active.png')
+    image = subjunctive.resource.image('images/tile-current.png')
 
 class Block(subjunctive.entity.Entity):
     pass
 
 class Tile(subjunctive.entity.Entity):
-    image = subjunctive.resource.image('images/tile-inactive.png')
+    image_active = subjunctive.resource.image('images/tile-active.png')
+    image_inactive = subjunctive.resource.image('images/tile-inactive.png')
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.active = False
+
+    @property
+    def image(self):
+        return self.image_active if self.active else self.image_inactive
+
+    def push(self, direction, pusher=None):
+        if not self.active:
+            self.world.swap(self, pusher)
+            self.active = True
 
 class World(subjunctive.world.World):
     tile_size = (16, 16)
