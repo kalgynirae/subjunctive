@@ -179,6 +179,14 @@ class World:
             available_locations.remove(location)
         return new_entities
 
+    def swap(self, entity1, entity2):
+        loc1 = self.locate(entity1)
+        self.remove(entity1)
+        loc2 = self.locate(entity2)
+        self.remove(entity2)
+        self.place(entity1, loc2)
+        self.place(entity2, loc1)
+
 if '--debug' in sys.argv:
     logging.basicConfig(level=logging.DEBUG)
 else:
