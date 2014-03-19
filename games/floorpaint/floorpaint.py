@@ -1,12 +1,9 @@
 import argparse
-
 import os.path
+import random
 
 import subjunctive
-
 from subjunctive.grid import Grid, left, right, up, down
-
-import random
 
 subjunctive.resource.add_path(os.path.dirname(__file__))
 
