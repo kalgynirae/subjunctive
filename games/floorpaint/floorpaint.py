@@ -16,8 +16,8 @@ class Player(subjunctive.entity.Entity):
 class Block(subjunctive.entity.Entity):
     pass
 
-class Paint(subjunctive.entity.Entity):
-    pass
+class Tile(subjunctive.entity.Entity):
+    image = subjunctive.resource.image('images/tile-inactive.png')
 
 class World(subjunctive.world.World):
     tile_size = (16, 16)
@@ -66,11 +66,10 @@ def generate_level(width, height):
             s.clear()
         elif len(s) == 4:
             keepgoing =  False
-            
-        
+
         if num_steps>(width*height-20):
             keepgoing = False
- 
+
     return spaces
 
 if __name__ == '__main__':
@@ -80,14 +79,15 @@ if __name__ == '__main__':
     grid = Grid(10, 10)
     world = World(grid)
     d = generate_level(10, 10)
+    player = Player(world)
+    world.place(player, grid.top_left)
     for (x, y), value in d.items():
         if not value:
             world.place(Block(world), grid.Location(x, y))
-    player = Player(world)
-    world.place(player, grid.top_left)
+        elif x!=0 or y!=0: world.place(Tile(world), grid.Location(x, y))
     #definitions = {'o': Player, 'b': Wall, '-': None}
     #world, player = World.load('levels/01.txt', definitions, Player)
-    
+
     def move_player(direction):
         player.move(direction)
     subjunctive.run(world, on_direction=move_player)
