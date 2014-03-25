@@ -27,6 +27,8 @@ class Planet(subjunctive.world.World):
 
     def die(self):
         self.background = self.dead_background
+        self.hide_instructions()
+        subjunctive.scheduler.add(after_3s=self.show_play())
 
     def setup(self, cursor):
         self.place(cursor, self.grid.center)
@@ -112,7 +114,9 @@ class Recycle(subjunctive.entity.Entity):
     pushable = True
 
 if __name__ == '__main__':
-    subjunctive.run(TitleScreen(), on_select=subjunctive.exit)
+    ts = TitleScreen()
+    subjunctive.scheduler.add(after_5s=ts.show_play)
+    subjunctive.run(ts, on_select=subjunctive.exit)
 
     while True:
         world = Planet()
