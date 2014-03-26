@@ -29,11 +29,16 @@ class Tile(subjunctive.entity.Entity):
         if not self.active:
             self.world.swap(self, pusher)
             self.active = True
+            check_win(world)
 
 class World(subjunctive.world.World):
     grid = subjunctive.grid.Grid(25, 25)
     tile_size = (16, 16)
     window_title = "Floorpaint"
+
+def check_win(world):
+    if all(e.active for e in world.entities if isinstance(e, Tile)):
+        print ('YOU WON')
 
 def generate_level(width, height):
     spaces = {(x, y): False for x in range(width) for y in range(height)}
