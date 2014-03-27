@@ -32,6 +32,10 @@ class World:
             #self.score_label = pyglet.text.Label(
             #    "", bold=True, color=(0, 0, 0, 255), x=x, y=y)
 
+    @property
+    def entities(self):
+        return (e for e in self._entities.values() if e is not None)
+
     def clear(self):
         self._entities = {self.grid.Location(x, y): None
                           for x in range(self.grid.width)
