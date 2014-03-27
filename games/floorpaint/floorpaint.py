@@ -39,10 +39,7 @@ class World(subjunctive.world.World):
 
     @property
     def complete(self):
-        if all(e.active for e in world.entities if isinstance(e, Tile)):
-            return True
-        else:
-            return False
+        return all(e.active for e in world.entities if isinstance(e, Tile))
 
 def generate_level(width, height):
     spaces = {(x, y): False for x in range(width) for y in range(height)}
