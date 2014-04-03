@@ -10,14 +10,22 @@ subjunctive.resource.add_path(os.path.dirname(__file__))
 class DeathError(Exception):
     pass
 
-class Planet(subjunctive.world.World):
+class TitleScreen(subjunctive.world.World):
     background = subjunctive.resource.image('images/green_planet.png')
+    continue_ = ((0, 525), subjunctive.resource.image('images/continue.png'))
+    overlays = [((0, 0), subjunctive.resource.image('images/title.png'))]
+    window_title = "Think Green"
+
+    def show_continue(self):
+        self.overlays.append(self.continue_)
+
+class Planet(TitleScreen):
     dead_background = subjunctive.resource.image('images/red_planet.png')
     grid = subjunctive.grid.Grid(22, 22)
     grid_offset = (231, 215)
+    overlays = [((0, 525), subjunctive.resource.image('images/explain.png'))]
     score_offset = (600, 40)
     tile_size = (13, 13)
-    window_title = "Think Green"
 
     def __init__(self):
         super().__init__()
@@ -27,8 +35,8 @@ class Planet(subjunctive.world.World):
 
     def die(self):
         self.background = self.dead_background
-        self.hide_instructions()
-        subjunctive.scheduler.add(after_3s=self.show_play())
+        self.overlays.clear()
+        subjunctive.scheduler.call(self.show_continue, after='3s')
 
     def setup(self, cursor):
         self.place(cursor, self.grid.center)
@@ -53,9 +61,6 @@ class Planet(subjunctive.world.World):
         if (self.tick_count % ((tc + 700) // tc) == 0 or
                 self.count(Hazard) < 1):
             self.spawn_random(Hazard, avoid=cursor_loc, edges=False)
-
-class TitleScreen(subjunctive.world.World):
-    background = subjunctive.resource.image('images/title.png')
 
 class Cursor(subjunctive.entity.Entity):
     image = subjunctive.entity.directional(
@@ -115,7 +120,7 @@ class Recycle(subjunctive.entity.Entity):
 
 if __name__ == '__main__':
     ts = TitleScreen()
-    subjunctive.scheduler.add(after_5s=ts.show_play)
+    subjunctive.scheduler.call(ts.show_continue, after='3s')
     subjunctive.run(ts, on_select=subjunctive.exit)
 
     while True:

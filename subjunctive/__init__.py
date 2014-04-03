@@ -4,6 +4,7 @@ import sdl2.ext
 from . import grid
 from . import entity
 from . import resource
+from . import scheduler
 from . import world
 
 class SubjunctiveExit(Exception):
@@ -15,18 +16,23 @@ def exit(*args, **kwargs):
 window = None
 def run(world, *, on_direction=None, on_select=None):
     global window
-    if window is None:
-        if world.background is not None:
-            width = world.background.w
-            height = world.background.h
-        else:
-            width = world.grid.width * world.tile_size[0]
-            height = world.grid.height * world.tile_size[1]
-        window = sdl2.ext.Window(world.window_title, (width, height))
-        window.show()
+
+    if world.background is not None:
+        size = (world.background.w, world.background.h)
+    else:
+        size = (world.grid.width * world.tile_size[0],
+                world.grid.height * world.tile_size[1])
+
+    if window is None or window.size != size:
+        if window is not None:
+            window.hide()
+        window = sdl2.ext.Window(world.window_title, size)
+    window.show()
 
     try:
         while True:
+            sdl2.timer.SDL_Delay(20)
+
             events = sdl2.ext.get_events()
             for event in events:
                 if event.type == sdl2.SDL_QUIT:
@@ -40,8 +46,9 @@ def run(world, *, on_direction=None, on_select=None):
                     if on_select is not None:
                         if sym in [sdl2.SDLK_RETURN, sdl2.SDLK_SPACE]:
                             on_select()
+
+            scheduler.update()
             world._draw(window)
-            sdl2.timer.SDL_Delay(20)
     except SubjunctiveExit:
         pass
 

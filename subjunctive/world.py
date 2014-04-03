@@ -13,6 +13,7 @@ class World:
     background = None
     grid = Grid(8, 8)
     grid_offset = (0, 0)
+    overlays = []
     score_offset = None
     tile_size = (16, 16)
     window_title = "Subjunctive!"
@@ -24,6 +25,9 @@ class World:
 
         # Set up locations
         self._entities = {loc: None for loc in self.grid}
+
+        # Copy the default overlays
+        self.overlays = self.__class__.overlays[:]
 
         self.score = 0
         if self.score_offset:
@@ -57,6 +61,10 @@ class World:
                 x, y = self._pixels(location)
                 sdl2.SDL_BlitSurface(entity.image, None, surface,
                                      sdl2.SDL_Rect(x, y))
+
+        # Draw overlays
+        for offset, image in self.overlays:
+            sdl2.SDL_BlitSurface(image, None, surface, sdl2.SDL_Rect(*offset))
 
         # Draw the score
         #if self.score_offset:
