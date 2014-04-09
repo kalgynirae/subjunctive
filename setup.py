@@ -5,6 +5,7 @@ setup(
     version='0.1',
     install_requires=[
         'PySDL2 ==0.8.0',
+        'enum34 ==0.9.23',
     ],
     packages=find_packages(),
     scripts=[

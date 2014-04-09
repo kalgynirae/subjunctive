@@ -2,10 +2,10 @@ import sdl2
 import sdl2.ext
 
 from . import grid
-from . import entity
-from . import resource
-from . import scheduler
-from . import world
+#from . import entity
+#from . import resource
+#from . import scheduler
+#from . import world
 
 class SubjunctiveExit(Exception):
     pass

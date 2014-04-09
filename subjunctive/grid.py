@@ -1,23 +1,11 @@
-import sdl2
-
-class Direction:
-    def __init__(self, name, value, number_of_directions):
-        self._number_of_directions = number_of_directions
-        self.name = name
-        self._value = value
-
-    def __str__(self):
-        return "<Direction %r>" % self.name
-
-    def __sub__(self, other):
-        "Return the number of clockwise 90° rotations between self and other"
-        return (self._value - other._value) % self._number_of_directions
+from collections import namedtuple
+from enum import Enum
 
 class Grid:
-    def __init__(self, width, height, offset_x=None, offset_y=None):
+    def __init__(self, width, height):
         self.width = width
         self.height = height
-        self.Location = _make_location_class(self, (width, height))
+        self.Location = _location_class(self, ['x', 'y'])
 
     def __iter__(self):
         for x in range(self.width):
@@ -44,66 +32,92 @@ class Grid:
     def top_right(self):
         return self.Location(0, self.width - 1)
 
+
+class PolarGrid:
+    def __init__(self, radius, slices):
+        self.radius = radius
+        self.slices = slices
+        self.Location = _location_class(self, ['r', 's'])
+
+    def __iter__(self):
+        for r in range(self.r):
+            for s in range(self.c):
+                yield self.Location(r, c)
+
+    def adjacent(self, location, direction):
+        r, s = location
+        r += direction.dr
+        s += direction.ds
+        return self.Location(r, s)
+
+    def valid_coordinates(self, r, s):
+        return 0 <= r < self.radius and 0 <= s < self.slices
+
+    class Direction(Enum):
+        cw = (0, -1)
+        ccw = (0, 1)
+        in_ = (-1, 0)
+        out = (1, 0)
+
+        def __init__(self, dr, ds):
+            self.dr = dr
+            self.ds = ds
+
+    def Location(self, r, s):
+        return self._Location(self, r, s)
+
+def _location_class(grid, parameters):
+    if len(parameters) < 1:
+        raise ValueError("Must have at least one parameter")
+    actual_params = ['__%s' % name for name in parameters]
+    parameter_list = ", ".join(name for name in parameters)
+
+    class_definition = _location_class_template.format(
+        parameters = parameters,
+        actual_params = actual_params,
+        parameter_list = parameter_list,
+    )
+    d = {'grid': grid}
+    exec(class_definition, d)
+    return d['Location']
+
+_location_class_template = """
+class Location:
+    #__slots__ = {actual_params!r}
+
+    def __eq__(self, other):
+        return all(getattr(self, name) == getattr(other, name)
+                   for name in {parameters!r})
+
+    def __hash__(self):
+        return hash(tuple(getattr(self, name) for name in {parameters!r}))
+
+    def __init__(self, {parameter_list}):
+        if not grid.valid_coordinates({parameter_list}):
+            raise OutOfBounds
+        for name in {parameters!r}:
+            setattr(self, '__%s' % name, locals()[name])
+
+    def __iter__(self):
+        yield from (getattr(self, name) for name in {parameters!r})
+
+    def __repr__(self):
+        return 'Location(%s)'.format(', '.join(
+                '%s=%s' % (name, getattr(self, name))
+                for name in {parameters!r}))
+
+    def __getattr__(self, name):
+        if name in {parameters!r}:
+            return getattr(self, '__%s' % name)
+        else:
+            raise AttributeError
+
+    def adjacent(self, direction):
+        return grid.adjacent(self, direction)
+
+Location.__qualname__ = grid.__class__.__qualname__ + '.Location'
+"""
+
+
 class OutOfBounds(Exception):
     pass
-
-def _make_location_class(parent, grid_size):
-    """Make a specialized Location class that validates its input
-
-    Instances of the returned class will raise an exception if they are
-    constructed with values that are out-of-bounds.
-
-    """
-    class Location:
-        __slots__ = ['__x', '__y']
-        max = grid_size
-
-        def __eq__(self, other):
-            return self.x == other.x and self.y == other.y
-
-        def __hash__(self):
-            return hash((self.x, self.y))
-
-        def __init__(self, x, y):
-            if not (isinstance(x, int) and isinstance(y, int)):
-                raise TypeError("Location object needs integers")
-            if not 0 <= x < self.max[0] or not 0 <= y < self.max[1]:
-                raise OutOfBounds
-            self.__x = x
-            self.__y = y
-
-        def __repr__(self):
-            return "Location({}, {})".format(self.x, self.y)
-
-        @property
-        def x(self):
-            return self.__x
-
-        @property
-        def y(self):
-            return self.__y
-
-        def adjacent(self, direction):
-            if direction == left:
-                return self.__class__(self.x - 1, self.y)
-            elif direction == down:
-                return self.__class__(self.x, self.y + 1)
-            elif direction == up:
-                return self.__class__(self.x, self.y - 1)
-            elif direction == right:
-                return self.__class__(self.x + 1, self.y)
-            else:
-                raise ValueError("Invalid direction: {}".format(direction_))
-
-    Location.__qualname__ = parent.__class__.__qualname__ + ".Location"
-    return Location
-
-left = Direction('left', 0, 4)
-up = Direction('up', 1, 4)
-right = Direction('right', 2, 4)
-down = Direction('down', 3, 4)
-
-KEYBOARD = {sdl2.SDLK_LEFT: left,
-            sdl2.SDLK_UP: up,
-            sdl2.SDLK_RIGHT: right,
-            sdl2.SDLK_DOWN: down}
